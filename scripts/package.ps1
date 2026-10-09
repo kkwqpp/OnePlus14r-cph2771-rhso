@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 $taskRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $taskModule = Join-Path $taskRoot 'module'
 $taskBackend = (Resolve-Path -LiteralPath $BackendPath).Path
-$taskOutput = [IO.Path]::GetFullPath($OutputPath)
+$taskOutput = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
 $taskElf = [IO.File]::ReadAllBytes($taskBackend)
 if ($taskElf.Length -lt 64 -or $taskElf[0] -ne 0x7f -or $taskElf[1] -ne 0x45 -or $taskElf[2] -ne 0x4c -or $taskElf[3] -ne 0x46 -or $taskElf[4] -ne 2 -or $taskElf[5] -ne 1 -or $taskElf[18] -ne 0xb7 -or $taskElf[19] -ne 0) {
   throw 'Backend must be a 64-bit little-endian AArch64 ELF binary. Build the Android arm64 backend first.'

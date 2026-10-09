@@ -15,7 +15,7 @@
 | ELF inspection | AArch64 PIE, `/system/bin/linker64`, 16 KiB load alignment; system liblog/libdl/libc dependencies. |
 | Native public-feed transport | Explicit Google whole-feed refresh succeeded at 20:14:21 UTC with native DNS and verified TLS; no private material uploaded. |
 | Repeated package and curated public assets | Both reproduced the delivered ZIP SHA-256. |
-| Fresh Git checkout packaging | PENDING_FRESH_CHECKOUT. |
+| Fresh Git checkout packaging | Passed: fresh source native build and package reproduced exact backend/ZIP hashes; relative output follows the PowerShell working directory. |
 | Real helper update | Installed through existing KernelSU/NoMount; v0.2.0 staged for manual reboot. Pending CLI and five software-asset hashes matched release. Three active files including metadata, PIF and combined hiding-state evidence remained unchanged. |
 
 Windows skips are the intentional child helper plus four symlink cases requiring Windows privileges. Android exercised those POSIX/symlink paths. Synthetic cases cover malformed/ambiguous metadata, unsupported selections, private feed TLS/address/format/redaction boundaries, stale context, verified backups, faults, process interruption and recovery. New directory entries are synced before Stack writes. Arbitrary power loss, disk/controller faults and every concurrent root syscall race are not certified; another root writer remains outside the helper lock.
