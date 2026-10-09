@@ -18,20 +18,25 @@ type request struct {
 	Args    map[string]string `json:"args"`
 }
 
-const help = `Wallet Diagnostic 0.1.1 — explicitly invoked helper, no daemon
+const help = `RHSO 0.2.0 — Root Hiding Stack Optimizer and Wallet diagnostics, no daemon
 Persistent private state: /data/adb/wallet_diagnostic
 Commands (optional --json; all results are redacted):
   help | init | status | diagnose | backups
   ingest --path /data/adb/wallet_diagnostic/inbox/input.xml
   validate --id INPUT_ID
   plan --selections INPUT_ID:0:0:ecdsa,OTHER_ID:0:0:rsa
-       [--targets true] [--patch YYYY-MM-DD]
+       [--targets true] [--compact-targets true] [--patch YYYY-MM-DD]
   apply --id PLAN_ID
   verify [--wallet-ready true] [--tap-confirmed true]
          [--reviewed-user NUMERIC_ANDROID_USER] (required for personal declarations)
   trust --action status|refresh (Google public feeds; no key uploads)
   rollback --id previous|last-verified|BACKUP_ID
-  api --action status|config|import (unavailable until contract verified)
+  api --action status|config|import [--path ROOT_PRIVATE_JSON_FILE]
+      (configured HTTPS raw-XML feeds; supplied provider route unverified)
+  stack --action status|plan|apply|verify|rollback
+        [--profile hma-scope|brezygisk-unmount] [--id PLAN_ID]
+        [--targets GOOGLE_PACKAGE_CSV] [--hide-packages PACKAGE_CSV]
+        [--enabled true|false] (reviewed settings; manual activation required)
   watch [--days 14] (read-only, no schedule)
   recovery --action status|restore|release-lock
   reset --action preview|status|confirm|resume|complete
@@ -138,7 +143,7 @@ func uniqueJSON(b []byte) error {
 	return nil
 }
 func validateRequest(r *request) error {
-	options := map[string][]string{"help": {}, "init": {}, "status": {}, "diagnose": {}, "export": {}, "backups": {}, "ingest": {"path"}, "validate": {"id"}, "plan": {"selections", "targets", "patch"}, "apply": {"id"}, "verify": {"wallet-ready", "tap-confirmed", "reviewed-user"}, "trust": {"action"}, "rollback": {"id"}, "api": {"action"}, "watch": {"days"}, "recovery": {"action"}, "reset": {"action", "confirmation", "review-hash"}}
+	options := map[string][]string{"help": {}, "init": {}, "status": {}, "diagnose": {}, "export": {}, "backups": {}, "ingest": {"path"}, "validate": {"id"}, "plan": {"selections", "targets", "compact-targets", "patch"}, "apply": {"id"}, "verify": {"wallet-ready", "tap-confirmed", "reviewed-user"}, "trust": {"action"}, "rollback": {"id"}, "api": {"action", "path"}, "stack": {"action", "profile", "targets", "hide-packages", "enabled", "id"}, "watch": {"days"}, "recovery": {"action"}, "reset": {"action", "confirmation", "review-hash"}}
 	allowed, ok := options[r.Command]
 	if !ok {
 		return fmt.Errorf("unknown command")
@@ -160,7 +165,7 @@ func validateRequest(r *request) error {
 		if !found || len(v) > 8192 || strings.ContainsRune(v, 0) {
 			return fmt.Errorf("invalid argument")
 		}
-		if (k == "targets" || k == "wallet-ready" || k == "tap-confirmed") && v != "true" && v != "false" {
+		if ((k == "targets" && r.Command == "plan") || k == "compact-targets" || k == "enabled" || k == "wallet-ready" || k == "tap-confirmed") && v != "true" && v != "false" {
 			return fmt.Errorf("invalid boolean")
 		}
 	}
@@ -192,7 +197,7 @@ func main() {
 		case "validate":
 			data, e = a.Validate(r.Args["id"])
 		case "plan":
-			data, e = a.Plan(r.Args["selections"], r.Args["targets"] == "true", r.Args["patch"])
+			data, e = a.Plan(r.Args["selections"], r.Args["targets"] == "true", r.Args["patch"], r.Args["compact-targets"] == "true")
 		case "apply":
 			data, e = a.Apply(r.Args["id"])
 		case "verify":
@@ -216,8 +221,9 @@ func main() {
 		case "reset":
 			data, e = a.Reset(r.Args["action"], r.Args["confirmation"], r.Args["review-hash"])
 		case "api":
-			data = map[string]any{"available": false, "endpoint": "https://keybox.tryigit.dev/api/cleverestrikcy/", "missing": []string{"documented route/method", "authentication", "request/response format", "rate limits", "authorized provenance"}}
-			e = &core.Error{Code: "E_API_UNAVAILABLE", Message: "API adapter unavailable: exact HTTPS endpoint returned HEAD 404 and its public contract is unverified. Local import works; no credentials are collected."}
+			data, e = a.API(r.Args["action"], r.Args["path"])
+		case "stack":
+			data, e = a.Stack(r.Args["action"], r.Args["profile"], r.Args["targets"], r.Args["hide-packages"], r.Args["enabled"], r.Args["id"])
 		default:
 			e = &core.Error{Code: "E_REQUEST", Message: "Unknown command. Run help."}
 		}

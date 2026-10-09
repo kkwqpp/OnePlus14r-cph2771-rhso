@@ -615,7 +615,15 @@ func (a *App) Status() (any, error) {
 	if resetPending {
 		next = resetNext
 	}
-	return map[string]any{"version": Version, "public_attestation": publicView, "active": config, "algorithms": algorithms, "declared_algorithms": declaredAlgorithms, "active_keybox_validation": activeValidation, "keybox_summaries": summaries, "findings": findings, "evidence_time": a.time(), "freshness": "fresh snapshot; findings become stale after relevant hashes/settings change", "last_operation": last, "rollback": backupView, "recovery": recovery, "reset": resetView, "next_step": next, "history": hist, "inventory": inventory, "device": device, "applications": apps, "watch": watch, "capabilities": caps, "apply_available": capErr == nil && !a.unfinished(), "api": apiStatus()}, nil
+	stackBinding, stackErr := a.stackEvidenceBinding()
+	if stackErr != nil {
+		stackBinding = "unavailable"
+	}
+	stackPending := a.stackUnfinished()
+	if stackPending && !resetPending {
+		next = "Inspect the stack journal and restore its checked resource backup through Stack rollback. Release an interrupted lock only through verified Recovery."
+	}
+	return map[string]any{"version": Version, "public_attestation": publicView, "active": config, "algorithms": algorithms, "declared_algorithms": declaredAlgorithms, "active_keybox_validation": activeValidation, "keybox_summaries": summaries, "findings": findings, "evidence_time": a.time(), "freshness": "fresh snapshot; findings become stale after relevant hashes/settings change", "last_operation": last, "rollback": backupView, "recovery": recovery, "reset": resetView, "next_step": next, "history": hist, "inventory": inventory, "device": device, "applications": apps, "watch": watch, "capabilities": caps, "apply_available": capErr == nil && stackErr == nil && !a.unfinished(), "api": a.apiSourceStatus(), "stack": a.stackStatus(), "stack_pending": stackPending, "stack_evidence_binding": stackBinding}, nil
 }
 func (a *App) hostChecks() any {
 	out := map[string]any{"failure_evidence": "not observed; static matches do not establish a network failure", "blocked_service_domains": []string{}}
@@ -645,9 +653,6 @@ func (a *App) hostChecks() any {
 	out["blocked_service_domains"] = blocked
 	out["hosts_hash"] = hash(b)
 	return out
-}
-func apiStatus() any {
-	return map[string]any{"available": false, "endpoint": "https://keybox.tryigit.dev/api/cleverestrikcy/", "reason": "Exact endpoint returned HTTPS HEAD 404. No verified public contract was found.", "missing": []string{"HTTP method and route", "authentication and credential scope", "request/response schema and size bounds", "rate limits and retry rules", "authorized key provenance"}, "credentials": "not accepted or stored until a verified adapter exists"}
 }
 func (a *App) Diagnose() (any, error) {
 	return a.withLock(func() (any, error) {
@@ -684,6 +689,10 @@ func (a *App) Verify(walletReady, tap bool, reviewedUser ...string) (any, error)
 		if !equal(state, j.Intended) {
 			return nil, fail("E_STALE", "Active files changed after commit. Verification is stale.")
 		}
+		stackBinding, e := a.stackEvidenceBinding()
+		if e != nil {
+			return nil, e
+		}
 		user, userErr := a.currentUser()
 		declaresReadiness := walletReady || tap
 		if declaresReadiness {
@@ -706,6 +715,7 @@ func (a *App) Verify(walletReady, tap bool, reviewedUser ...string) (any, error)
 		}
 		out["files_committed"] = true
 		out["configuration"] = state
+		out["stack_evidence_binding"] = stackBinding
 		out["time"] = a.time()
 		out["current_android_user"] = "unavailable"
 		if userErr == nil {
@@ -731,6 +741,10 @@ func (a *App) Verify(walletReady, tap bool, reviewedUser ...string) (any, error)
 			}
 			if !equal(current, state) {
 				return fail("E_STALE", "Active configuration changed during verification. No readiness report was recorded; collect fresh evidence.")
+			}
+			freshStack, err := a.stackEvidenceBinding()
+			if err != nil || freshStack != stackBinding {
+				return fail("E_STALE", "Stack settings changed during verification. No readiness report was recorded; collect fresh evidence.")
 			}
 			if userErr == nil {
 				freshUser, err := a.currentUser()

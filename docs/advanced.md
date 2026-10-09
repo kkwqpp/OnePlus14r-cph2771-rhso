@@ -44,7 +44,7 @@ Do not log private filenames or identifiers beyond what the redacted support rep
 The first-use guide gives the simple temporary-copy procedure. To avoid a phone-side intermediate XML file, transfer from the PC directly into a reviewed root-owned inbox path through binary stdin. This PowerShell 7 example does not pass file contents in command arguments or print them. Run `init` first so the inbox exists; status itself does not initialize private state:
 
 ```powershell
-$localInput = Read-Host 'Absolute path to your private input XML'
+$localInput = 'C:\Private\input.xml'
 & adb shell "su -c '/data/adb/modules/wallet_diagnostic/bin/walletdiag init'"
 if ($LASTEXITCODE -ne 0) { throw 'Inspect the backend status error before continuing' }
 $transfer = [Diagnostics.ProcessStartInfo]::new()
@@ -107,21 +107,27 @@ Do not kill keystore2 or guess process names to force adoption. The helper does 
 
 ## API configuration
 
-The configured endpoint is `https://keybox.tryigit.dev/api/cleverestrikcy/`, including its exact spelling. A HEAD response and a guessed route are insufficient to establish a credential-source contract. The adapter’s `status`, `config` and `import` actions report unavailable until provider-authorized primary documentation establishes request route/method, authentication, payload/schema, response limits, provenance, authorized use, and error/rate-limit semantics. No credential-entry field or private-token command is provided yet.
+The supplied endpoint remains `https://keybox.tryigit.dev/api/cleverestrikcy/`, including its exact spelling. A HEAD response and a guessed route are insufficient to establish its provider contract; that endpoint remains unavailable. Analysis of CleveresTricky's configurable feed client supports a separate generic HTTPS raw-XML adapter. Private configuration and credentials are read only from a root-owned mode-0600 JSON file directly inside the private inbox. No token, URL or password argument is accepted. See [RHSO controls](rhso.md) for the schema, authentication modes, import limits and explicit staging workflow.
 
 ```powershell
 Invoke-WalletDiagnostic api @{ action = 'status' }
 ```
 
-An eventual verified adapter must use HTTPS certificate verification, root-owned credentials, bounded size/time/redirects/retries, same-origin credential handling, and private staging only. It must not upload existing material or execute downloaded code. A failed import must preserve active configuration. Local ingest needs no provider account.
+Generic import uses one bounded GET, verified TLS, checked public DNS addresses, no proxy, redirect or retry, and private staging only. It never uploads existing material or executes downloaded code. A failed import preserves active configuration. Local ingest needs no provider account; a source provenance declaration does not establish hardware trust or authenticate a provider contract.
+
+## Selected stack settings and target compaction
+
+Use `stack --action status --json` for installed-version and resource availability. Select `hma-scope` targets and hide packages explicitly, or a deliberate `brezygisk-unmount` enable/disable intent. Separate `plan`, `apply`, `verify` and `rollback` actions all use the same backend. The redacted preview and plan ID must be reviewed before Apply. Stack recovery uses its typed resource backup and journal; the keybox transaction's three-file allowlist is unchanged. Both setting Apply and rollback report runtime adoption unknown and require manual reboot review. See [RHSO controls](rhso.md) for the verified contracts and limitations.
+
+`plan --compact-targets true` independently removes duplicate target occurrences when their modes agree, retaining comments and original kept lines. Mixed modes or unsupported syntax stop the plan. Use the ordinary keybox plan preview, backup, Apply and recovery workflow; compaction alone preserves keybox and patch bytes.
 
 ## Manual watch
 
-`watch` compares TrickyStore/PIF patches and warns about a built-in estimated 2026-11-18 expiry within configurable days. This dated estimate applies only to the fingerprint pinned by this release; it is not a universal expiry or Google guarantee, and a fingerprint change invalidates it. This module installs no scheduler or daemon. Watch does not change patches, fingerprints or configuration.
+`watch` compares TrickyStore/PIF patches and warns about the supplied estimated 2026-11-18 fingerprint expiry within configurable days. The estimate is meaningful only for the supplied fingerprint and is invalidated by a fingerprint change. This module installs no scheduler or daemon. Watch does not change patches, fingerprints or configuration.
 
 ## Separately confirmed reset
 
-Ordinary Apply, installation, module action and diagnosis never clear app data or reboot. Reset is an Advanced workflow only after diagnosis supports trying it. The review and journal bind a numeric Android user as well as the installed PIF action/dependency hashes, current three-file configuration and PIF settings. The backend checks the same user before confirmation and across reboot/resume/completion. It passes that fixed numeric user to every clear, rather than resolving `current` independently at each destructive step. A profile switch or changed scripts/settings blocks continuation and needs review; no failed clear is repeated automatically. The configured sequence is Wallet clear, Play Store clear, GSF clear, GMS clear twice, a manual reboot, the separately reviewed PIF action, GMS force-stop for the bound user, then user sign-in/card re-provisioning and Wallet checks. The workflow retains a legacy double GMS clear; no verified rationale establishes that repetition as necessary or sufficient to resolve a Wallet failure.
+Ordinary Apply, installation, module action and diagnosis never clear app data or reboot. Reset is an Advanced workflow only after diagnosis supports trying it. The review and journal bind a numeric Android user as well as the installed PIF action/dependency hashes, current three-file configuration and PIF settings. The backend checks the same user before confirmation and across reboot/resume/completion. It passes that fixed numeric user to every clear, rather than resolving `current` independently at each destructive step. A profile switch or changed scripts/settings blocks continuation and needs review; no failed clear is repeated automatically. The configured sequence is Wallet clear, Play Store clear, GSF clear, GMS clear twice, a manual reboot, the separately reviewed PIF action, GMS force-stop for the bound user, then user sign-in/card re-provisioning and Wallet checks. There is no established reason for the repeated GMS clear; it is retained because the owner explicitly requested that sequence.
 
 Automatic post-reboot PIF execution is unavailable. Inspection showed the installed action can fetch network material, modify PIF/TrickyStore patch settings and stop processes. Its network mutation contract is not verified; the helper cannot treat a script hash as an audit of fetched content. `resume` checks the journal/reboot/scripts and returns a precise capability blocker plus manual next steps. It does not run the action. Do not execute these commands merely to test the helper. The device owner must separately review and choose the installed action before running it manually; it is outside ordinary configuration Apply.
 
@@ -152,21 +158,21 @@ Invoke-WalletDiagnostic reset @{ action = 'complete'; confirmation = 'PIF ACTION
 
 `resume` intentionally returns an unavailable capability result instead of executing PIF, so the PowerShell helper stops that invocation. Inspect the result and perform the later manual commands as a separate, reviewed choice. Recheck the journal’s numeric user before the PIF action too; the action has global side effects outside the helper’s per-user clear boundary. If the PC shell is reopened, recover the bound user from reset status rather than guessing user 0 or using `current` in the force-stop command.
 
-The confirmation irreversibly clears the listed apps’ local data for the reviewed numeric user; configuration backups do not restore it. Wallet/card setup may be lost; GSF state and Android-ID behavior may change; Google sign-in and card provisioning may be required. The journal is one-shot and never resumes automatically at boot or repeats failed clears. Manual completion is a user declaration, not proof that the helper executed or independently verified PIF behavior. Development validation did not execute the ritual; see [validation and limits](validation.md).
+The confirmation irreversibly clears the listed apps’ local data for the reviewed numeric user; configuration backups do not restore it. Wallet/card setup may be lost; GSF state and Android-ID behavior may change; Google sign-in and card provisioning may be required. The journal is one-shot and never resumes automatically at boot or repeats failed clears. Manual completion is an owner declaration, not proof that the helper executed or independently verified PIF behavior. The authorized development-phone trial completed the requested ritual with separately guarded PIF execution; see the [live trial record](live-keybox-trial.md). No successful Wallet setup or payment was established by completing it.
 
 ## Compatibility and UI limitations
 
-Locally bundled KernelSU JavaScript SDK 3.0.2 uses `ksu.exec(command, JSON.stringify(options), callbackName)`. KSU Next and standalone WebUI are shell execution bridges, not safe argument-vector APIs. The reviewed standalone host build exposes the expected three-argument overload, exported WebUI activity and file-picker callback in static inspection; other versions require separate capability checks. Picker runtime behavior, returned content-URI handling and root staging are not proven by static decompilation, so the module uses an absolute inbox path with ADB fallback. It does not guess the randomized manager package or load scripts from a CDN. All displayed values use text nodes; API-provided HTML is never rendered.
+Locally bundled KernelSU JavaScript SDK 3.0.2 uses `ksu.exec(command, JSON.stringify(options), callbackName)`. KSU Next and standalone WebUI are shell execution bridges, not safe argument-vector APIs. The installed standalone APK statically exposes the expected three-argument overload, the exported WebUI activity and a file-picker callback. Picker runtime behavior, returned content-URI handling and root staging are not proven by static decompilation, so the module uses an absolute inbox path with ADB fallback. It does not guess the randomized manager package or load scripts from a CDN. All displayed values use text nodes; API-provided HTML is never rendered.
 
 No secrets are saved in WebUI localStorage/sessionStorage. The UI retains only redacted summaries and selected IDs in memory, blocks repeat taps while a command runs, and removes the plan after submission. Back/cancel is available before commit; cancellation during commit must be handled by the backend’s finish/recovery policy. If the host closes, inspect the persistent journal before another write.
 
 ## Build
 
-`go.mod` declares a Go 1.25 minimum; the tested compiler is official Go 1.27.2. Version 0.1.1 uses `CGO_ENABLED=1`, `GOOS=android`, `GOARCH=arm64`, Android NDK r30 and external linking for native Android DNS. It depends on Android system libraries and is not fully static. Follow the portable prerequisites and commands in [build and test](build.md), then consult [validation and limits](validation.md) for recorded results. Development tools do not belong on the phone.
+`go.mod` declares a Go 1.25 minimum; the tested compiler is the official Go 1.27.2 toolchain. The production Android build uses `CGO_ENABLED=1`, `GOOS=android`, `GOARCH=arm64` and Android NDK r30 API-28 clang with `-trimpath` to support native Android DNS. It links the platform runtime and does not ship a separate resolver daemon. Run the backend tests and UI contract tests listed in the test report before packaging. Build/decompiler tools are separate development dependencies and do not belong on the phone.
 
 ```powershell
-& .\scripts\package.ps1 -BackendPath '.\dist\walletdiag' -OutputPath '.\dist\wallet-diagnostic-v0.1.1.zip'
-Get-FileHash -LiteralPath '.\dist\wallet-diagnostic-v0.1.1.zip' -Algorithm SHA256
+& .\scripts\package.ps1 -BackendPath '.\dist\walletdiag' -OutputPath '.\dist\rhso-v0.2.0.zip'
+Get-FileHash -LiteralPath '.\dist\rhso-v0.2.0.zip' -Algorithm SHA256
 ```
 
 Packaging checks an AArch64 ELF header, required local assets/licenses, LF shell/property files, and rejects symlinks. ZIP entries are ordered and have fixed timestamps; repeated packaging with unchanged source and toolchain should yield the same hash. KernelSU installation is supported; no recovery-flashing instructions are included. Updates preserve private state. Uninstall keeps active TrickyStore changes and recovery data; roll back deliberately before uninstall if needed.

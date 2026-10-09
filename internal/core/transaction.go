@@ -102,7 +102,7 @@ func (a *App) loadBackup(id string) (Backup, error) {
 	if b.Schema != 1 || b.ID != id || len(b.Files) != 3 {
 		return b, fail("E_BACKUP", "Unsupported or incomplete backup.")
 	}
-	kinds := map[string]bool{"apply": true, "rollback": true, "wallet-reset-preparation": true, "external-writer-evidence": true, "verified-configuration": true, "pre-recovery": true}
+	kinds := map[string]bool{"apply": true, "rollback": true, "wallet-reset-preparation": true, "external-writer-evidence": true, "verified-configuration": true, "pre-recovery": true, "stack-profile": true}
 	if !kinds[b.Type] || (b.Adoption != "unknown" && b.Adoption != "pending" && b.Adoption != "verified") || (b.Verified && b.Adoption != "verified") {
 		return b, fail("E_BACKUP", "Backup contains unsupported reporting metadata.")
 	}

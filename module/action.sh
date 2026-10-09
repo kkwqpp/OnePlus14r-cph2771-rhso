@@ -6,8 +6,8 @@ if command -v cmd >/dev/null 2>&1; then
   resolved=$(cmd package resolve-activity --brief -n "$ACTIVITY" 2>/dev/null)
   case "$resolved" in
     *io.github.a13e300.ksuwebui/*WebUIActivity*)
-      if am start -n "$ACTIVITY" --es id wallet_diagnostic --es name 'Wallet Diagnostic' >/dev/null 2>&1; then
-        echo 'Opened Wallet Diagnostic WebUI.'
+      if am start -n "$ACTIVITY" --es id wallet_diagnostic --es name 'RHSO' >/dev/null 2>&1; then
+        echo 'Opened RHSO WebUI.'
         exit 0
       fi
       ;;

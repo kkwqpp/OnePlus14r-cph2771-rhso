@@ -329,6 +329,11 @@ func (a *App) planCapabilities() (map[string]string, error) {
 	if e != nil {
 		return nil, e
 	}
+	stackBinding, e := a.stackEvidenceBinding()
+	if e != nil {
+		return nil, e
+	}
+	out["stack_evidence_binding"] = stackBinding
 	b, readErr := bounded(filepath.Join(a.Root, "public-attestation.json"), 4<<20)
 	out["public_feed_snapshot"] = "absent"
 	if readErr == nil {

@@ -8,7 +8,7 @@ The SDK source is copied without modifications into webroot/ksu.js.
 The JavaScript package license applies to this package, not all KernelSU components.
 The backend's Go runtime license is included separately.
 
-Android native build (Wallet Diagnostic 0.1.1)
+Android native build (RHSO 0.2.0)
 Build input: official Android NDK r30, revision 30.0.16248370, Windows x86_64.
 Source: https://developer.android.com/ndk/downloads?hl=en
 The Android cgo/external-link build uses system bionic DNS and may incorporate

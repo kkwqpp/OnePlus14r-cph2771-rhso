@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$BackendPath,
-  [string]$OutputPath = (Join-Path $PSScriptRoot '..\dist\wallet-diagnostic-v0.1.1.zip')
+  [string]$OutputPath = (Join-Path $PSScriptRoot '..\dist\rhso-v0.2.0.zip')
 )
 $ErrorActionPreference = 'Stop'
 $taskRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))

@@ -1,8 +1,8 @@
-# Build and test
+# Build and test RHSO
 
-This guide builds the helper and its local assets. It does not install a module, alter active phone configuration, clear app data or run the reset ritual. All fixtures are synthetic. Copied/decompiled Android/vendor code and external build tools are development inputs outside the repository; do not redistribute them in the ZIP.
+This guide builds the RHSO 0.2.0 candidate and its local assets. It does not install a module, alter active phone configuration, fetch a configured private feed, clear app data or run the reset ritual. All fixtures are synthetic. Copied/decompiled Android/vendor code and external build tools are development inputs outside the repository; do not redistribute them in the ZIP. Final 0.2.0 integrated results and release hashes remain pending in [validation](validation.md).
 
-The tested development toolchain is official Go 1.27.2, Node.js 24.18.0, Playwright 1.62.1, Git Bash and headless Google Chrome. `go.mod` declares a Go 1.25 minimum. Version 0.1.1 uses Android NDK r30 with `GOOS=android`, `GOARCH=arm64`, `CGO_ENABLED=1` and external linking for Android native DNS. The arm64 executable uses Android's system linker/libraries; it is not fully static. Android needs no Python, curl, OpenSSL, Node.js, compiler or local web server for this module.
+The recorded development toolchain is official Go 1.27.2, Node.js 24.18.0, Playwright 1.62.1, Git Bash and headless Google Chrome. `go.mod` declares a Go 1.25 minimum. RHSO retains the native DNS build introduced in version 0.1.1: Android NDK r30 with `GOOS=android`, `GOARCH=arm64`, `CGO_ENABLED=1` and external linking. The arm64 executable uses Android's system linker/libraries; it is not fully static. Android needs no Python, curl, OpenSSL, Node.js, compiler or local web server for this module.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Go tests failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Go vet failed' }
 ```
 
-The suite exercises XML/private-key/X.509 validation, deliberate selection/merge and metadata handling, plan freshness, backup validation, interrupted-set recovery, concurrency/external edits, redaction, reset guards, numeric-user binding and strict CLI request parsing. Consult [validation and limits](validation.md) for recorded results; fixture tests cannot model every root writer, storage-controller failure, real signing identity or remote Google decision.
+The candidate suite includes XML/private-key/X.509 validation, deliberate selection/merge, target compaction, plan freshness, backup validation, interrupted-set recovery, concurrency/external edits, redaction, reset guards, numeric-user binding and strict CLI request parsing. Additional fixtures exercise private feed configuration and bounded transport, explicit stack profiles, full-resource backup/restoration and stack evidence binding. Consult [validation and limits](validation.md) for the distinction between historical results, candidate checks and pending final release results; fixture tests cannot model every root writer, storage-controller failure, real signing identity or remote Google decision.
 
 ## WebUI and shell fixtures
 
@@ -59,7 +59,7 @@ $bashExecutable = (Get-Command bash -CommandType Application).Source
 if ($LASTEXITCODE -ne 0) { throw 'Offline module-shell fixtures failed' }
 ```
 
-Core tests cover bounded base64url requests, response-schema gating, defensive redaction and explicit selection tuples. Browser fixtures cover the import/review/apply/verify sequence, explicit confirmation, duplicate submissions, inert untrusted HTML, unavailable bridge/API, reset preview gating, long-ID/hash wrapping at 390px and enlarged text at 320px. Screenshots under `build/` contain mock data. They are not real Wallet evidence. Module-shell fixtures check syntax, the exact standalone activity/extra contract, status/CLI fallback, module-only installer permissions and uninstall preservation. They do not prove an Android host launch.
+Core tests cover bounded base64url requests, response-schema gating, defensive redaction, explicit selection tuples, compaction counts, private-file API arguments and supported stack review fields. Browser fixtures cover explicit staging/validation, selection/review/Apply/Verify, stale configuration/user/source/stack evidence, duplicate submissions, inert untrusted HTML, unavailable capabilities, reset and journal gates, and confirmed stack rollback. They also check long-ID/hash wrapping at 390px and enlarged text at 320px. Screenshots under `build/` contain mock data; they are not real Wallet or stack-runtime evidence. Module-shell fixtures check syntax, the exact standalone activity/extra contract, status/CLI fallback, module-only installer permissions and uninstall preservation. They do not prove an Android host launch. Tests do not contact a provider, upload key material or apply a live stack profile.
 
 ## Android build
 
@@ -106,9 +106,9 @@ Optional isolated Android test executables can be cross-compiled with `go test -
 The script checks an AArch64 ELF header, required local assets/licenses, LF shell/property files, and rejects symlinks/reparse points. It copies only the selected backend into `module/bin/walletdiag`, sorts ZIP entries, fixes entry timestamps and writes a package SHA-256 file. A ZIP includes no decompiler, copied APK/firmware, fixture key, provider credential, or recovery state.
 
 ```powershell
-& .\scripts\package.ps1 -BackendPath '.\dist\walletdiag' -OutputPath '.\dist\wallet-diagnostic-v0.1.1.zip'
-Get-FileHash -LiteralPath '.\dist\wallet-diagnostic-v0.1.1.zip' -Algorithm SHA256
-Get-Content -LiteralPath '.\dist\wallet-diagnostic-v0.1.1.zip.sha256'
+& .\scripts\package.ps1 -BackendPath '.\dist\walletdiag' -OutputPath '.\dist\rhso-v0.2.0.zip'
+Get-FileHash -LiteralPath '.\dist\rhso-v0.2.0.zip' -Algorithm SHA256
+Get-Content -LiteralPath '.\dist\rhso-v0.2.0.zip.sha256'
 ```
 
 For a reproducibility check with unchanged binary/assets and the same compression runtime:
@@ -121,4 +121,6 @@ $packageHash2 = (Get-FileHash -LiteralPath '.\build\package-check-2.zip' -Algori
 if ($packageHash1 -ne $packageHash2) { throw 'Package hashes differ' }
 ```
 
-Rebuild/repackage after any final source or asset change. The delivered ZIP hash must describe the final archive, not an earlier test package. Source is MIT; the vendored KernelSU JavaScript SDK and linked Go runtime retain their Apache-2.0 and BSD notices. The native build can incorporate NDK CRT objects, compiler-rt builtins and libunwind, so unmodified NDK and LLVM aggregate notices are retained in `module/licenses/Android-NDK-r30-NOTICE.txt` and `LLVM-r30-NOTICE.txt`. These notice collections cover more components than this executable uses; they do not mean the full SDK/toolchain or every named library is shipped. Android's shared system libraries are not copied into the ZIP. KernelSU installation is supported; no custom-recovery flashing path is supplied.
+Rebuild/repackage after any final source or asset change. Before publishing, record the final archive size, ZIP/backend hashes and integrated results in [validation](validation.md), then replace the pending hash in the README. A historical 0.1.1 hash cannot verify a 0.2.0 archive. Keep the module ID `wallet_diagnostic` and backend filename `walletdiag` even though the visible product and archive are branded RHSO.
+
+Source is MIT; the vendored KernelSU JavaScript SDK and linked Go runtime retain their Apache-2.0 and BSD notices. The native build can incorporate NDK CRT objects, compiler-rt builtins and libunwind, so unmodified NDK and LLVM aggregate notices are retained in `module/licenses/Android-NDK-r30-NOTICE.txt` and `LLVM-r30-NOTICE.txt`. These notice collections cover more components than this executable uses; they do not mean the full SDK/toolchain or every named library is shipped. Android's shared system libraries are not copied into the ZIP. KernelSU installation is supported; no custom-recovery flashing path is supplied.

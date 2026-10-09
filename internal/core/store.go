@@ -64,7 +64,7 @@ func (a *App) unfinished() bool {
 	}
 	var reset resetJournal
 	e = readJSON(filepath.Join(a.Root, "reset-journal.json"), &reset)
-	return (e != nil && !os.IsNotExist(e)) || (e == nil && (a.validateReset(reset, false) != nil || reset.State != "completed"))
+	return (e != nil && !os.IsNotExist(e)) || (e == nil && (a.validateReset(reset, false) != nil || reset.State != "completed")) || a.stackUnfinished()
 }
 func (a *App) requireRecovered() error {
 	if a.unfinished() {
@@ -121,26 +121,35 @@ func (a *App) Ingest(path string) (any, error) {
 		if len(b) == 0 {
 			return nil, fail("E_INPUT", "The input is empty.")
 		}
-		id, e := newID()
-		if e != nil {
-			return nil, e
-		}
-		dir := filepath.Join(a.Root, "staged", id)
-		if e = os.Mkdir(dir, 0700); e != nil {
-			return nil, e
-		}
-		if e = atomicWrite(filepath.Join(dir, "input.xml"), b, Metadata{0600, ownerID(), ownerID(), ""}); e != nil {
-			return nil, e
-		}
-		s := Stage{1, id, hash(b), a.time(), len(b)}
-		if e = writeJSON(filepath.Join(dir, "stage.json"), s); e != nil {
-			return nil, e
-		}
-		if e = a.history("ingest", id, "staged"); e != nil {
-			return nil, e
-		}
-		return s, nil
+		return a.stageBytes(b)
 	})
+}
+
+// Callers hold the operation lock and have checked requireRecovered. Local and
+// remote sources share the same immutable private staging/history behavior.
+func (a *App) stageBytes(b []byte) (Stage, error) {
+	if len(b) == 0 || len(b) > keybox.MaxInput {
+		return Stage{}, fail("E_INPUT", "The staged input is empty or exceeds the size limit.")
+	}
+	id, e := newID()
+	if e != nil {
+		return Stage{}, e
+	}
+	dir := filepath.Join(a.Root, "staged", id)
+	if e = os.Mkdir(dir, 0700); e != nil {
+		return Stage{}, e
+	}
+	if e = atomicWrite(filepath.Join(dir, "input.xml"), b, Metadata{0600, ownerID(), ownerID(), ""}); e != nil {
+		return Stage{}, e
+	}
+	s := Stage{1, id, hash(b), a.time(), len(b)}
+	if e = writeJSON(filepath.Join(dir, "stage.json"), s); e != nil {
+		return Stage{}, e
+	}
+	if e = a.history("ingest", id, "staged"); e != nil {
+		return Stage{}, e
+	}
+	return s, nil
 }
 func (a *App) stage(id string) (*keybox.Document, Stage, error) {
 	p, e := a.object("staged", id)
@@ -183,29 +192,38 @@ func validStage(s Stage, id string) bool {
 }
 
 type Plan struct {
-	Schema       int                  `json:"schema"`
-	ID           string               `json:"id"`
-	Time         string               `json:"time"`
-	Type         string               `json:"type"`
-	Inputs       []Stage              `json:"inputs"`
-	Active       map[string]FileState `json:"active"`
-	Intended     map[string]FileState `json:"intended"`
-	Changes      []string             `json:"changes"`
-	Capabilities map[string]string    `json:"capabilities"`
-	SourceBackup string               `json:"source_backup,omitempty"`
-	Summary      any                  `json:"summary,omitempty"`
-	Preview      []map[string]any     `json:"preview"`
-	Warnings     []string             `json:"warnings"`
-	Selections   []keybox.Selection   `json:"selections"`
+	Schema           int                      `json:"schema"`
+	ID               string                   `json:"id"`
+	Time             string                   `json:"time"`
+	Type             string                   `json:"type"`
+	Inputs           []Stage                  `json:"inputs"`
+	Active           map[string]FileState     `json:"active"`
+	Intended         map[string]FileState     `json:"intended"`
+	Changes          []string                 `json:"changes"`
+	Capabilities     map[string]string        `json:"capabilities"`
+	SourceBackup     string                   `json:"source_backup,omitempty"`
+	Summary          any                      `json:"summary,omitempty"`
+	Preview          []map[string]any         `json:"preview"`
+	Warnings         []string                 `json:"warnings"`
+	Selections       []keybox.Selection       `json:"selections"`
+	TargetCompaction *TargetCompactionSummary `json:"target_compaction,omitempty"`
 }
 
 func (p Plan) view() any {
 	w := append([]string{}, p.Warnings...)
 	w = append(w, "Configuration-set replacement is recoverable, not atomic. Other root writers are outside this helper's lock.", "Public-chain evidence is a separate bounded check, not proof of hardware identity or Wallet acceptance. Wallet acceptance requires a real check.")
-	return map[string]any{"id": p.ID, "time": p.Time, "type": p.Type, "changes": p.Changes, "preview": p.Preview, "summary": p.Summary, "active": p.Active, "intended": p.Intended, "metadata": "Selected inputs are emitted with DeviceID WalletDiagnosticHelper; no hardware identity is recreated.", "adoption": "Per-file FileObserver reload; identity adoption remains pending fresh evidence.", "required_capabilities": p.Capabilities, "warnings": w}
+	view := map[string]any{"id": p.ID, "time": p.Time, "type": p.Type, "changes": p.Changes, "preview": p.Preview, "summary": p.Summary, "active": p.Active, "intended": p.Intended, "metadata": "Selected inputs are emitted with DeviceID WalletDiagnosticHelper; no hardware identity is recreated.", "adoption": "Per-file FileObserver reload; identity adoption remains pending fresh evidence.", "required_capabilities": p.Capabilities, "warnings": w}
+	if p.TargetCompaction != nil {
+		view["target_compaction"] = p.TargetCompaction
+	}
+	return view
 }
-func (a *App) Plan(selections string, targets bool, patch string) (any, error) {
+func (a *App) Plan(selections string, targets bool, patch string, compactTargetOption ...bool) (any, error) {
 	return a.withLock(func() (any, error) {
+		if len(compactTargetOption) > 1 {
+			return nil, fail("E_REQUEST", "Choose one target compaction option.")
+		}
+		compact := len(compactTargetOption) == 1 && compactTargetOption[0]
 		if e := a.requireRecovered(); e != nil {
 			return nil, e
 		}
@@ -319,7 +337,7 @@ func (a *App) Plan(selections string, targets bool, patch string) (any, error) {
 				return nil, e
 			}
 		}
-		if targets {
+		if targets || compact {
 			b := []byte{}
 			if before["target.txt"].Exists {
 				b, e = bounded(filepath.Join(a.Active, "target.txt"), 1<<20)
@@ -327,9 +345,20 @@ func (a *App) Plan(selections string, targets bool, patch string) (any, error) {
 					return nil, e
 				}
 			}
-			out, e := repairTargets(b)
-			if e != nil {
-				return nil, e
+			out := b
+			if compact {
+				var summary TargetCompactionSummary
+				out, summary, e = compactTargets(out)
+				if e != nil {
+					return nil, e
+				}
+				p.TargetCompaction = &summary
+			}
+			if targets {
+				out, e = repairTargets(out)
+				if e != nil {
+					return nil, e
+				}
 			}
 			if e = a.propose(dir, &p, "target.txt", out); e != nil {
 				return nil, e
@@ -401,17 +430,22 @@ func (a *App) propose(dir string, p *Plan, n string, b []byte) error {
 		}
 		added := []string{}
 		removed := []string{}
-		for _, pair := range [][2]string{{string(previous), string(b)}, {string(b), string(previous)}} {
-			changes := []string{}
-			for _, line := range strings.Split(pair[1], "\n") {
-				if line != "" && !lineIn(line, pair[0]) {
-					changes = append(changes, line)
+		if n == "target.txt" {
+			added = targetLineDelta(previous, b)
+			removed = targetLineDelta(b, previous)
+		} else {
+			for _, pair := range [][2]string{{string(previous), string(b)}, {string(b), string(previous)}} {
+				changes := []string{}
+				for _, line := range strings.Split(pair[1], "\n") {
+					if line != "" && !lineIn(line, pair[0]) {
+						changes = append(changes, line)
+					}
 				}
-			}
-			if len(added) == 0 && pair[0] == string(previous) {
-				added = changes
-			} else {
-				removed = changes
+				if len(added) == 0 && pair[0] == string(previous) {
+					added = changes
+				} else {
+					removed = changes
+				}
 			}
 		}
 		preview["added_lines"] = added
@@ -505,6 +539,9 @@ func (a *App) loadPlan(id string) (Plan, string, error) {
 	}
 	if p.Schema != 1 || p.ID != id || (p.Type != "apply" && p.Type != "rollback") {
 		return p, dir, fail("E_FORMAT", "Unsupported or corrupt plan format.")
+	}
+	if !validTargetCompaction(p.TargetCompaction) || (p.Type != "apply" && p.TargetCompaction != nil) {
+		return p, dir, fail("E_FORMAT", "Target compaction reporting metadata is invalid.")
 	}
 	if len(p.Active) != 3 || len(p.Intended) != 3 {
 		return p, dir, fail("E_FORMAT", "Incomplete configuration-set plan.")

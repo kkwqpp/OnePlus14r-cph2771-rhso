@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const Version = "0.1.1"
+const Version = "0.2.0"
 
 var files = []string{"keybox.xml", "security_patch.txt", "target.txt"}
 var validID = regexp.MustCompile(`^[a-f0-9]{32}$`)
@@ -350,11 +350,11 @@ func ExitCode(code string) int {
 	switch code {
 	case "OK":
 		return 0
-	case "E_INPUT", "E_XML", "E_VALIDATION", "E_SELECTION", "E_PATH", "E_ID", "E_REQUEST":
+	case "E_INPUT", "E_XML", "E_VALIDATION", "E_SELECTION", "E_PATH", "E_ID", "E_REQUEST", "E_API_CONFIG", "E_API_FORMAT", "E_API_SSRF", "E_API_LIMIT":
 		return 2
 	case "E_BUSY":
 		return 3
-	case "E_STALE":
+	case "E_STALE", "E_API_STALE":
 		return 4
 	case "E_CAPABILITY", "E_ROOT", "E_API_UNAVAILABLE":
 		return 5

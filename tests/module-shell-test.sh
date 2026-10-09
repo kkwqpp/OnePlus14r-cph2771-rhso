@@ -28,7 +28,7 @@ fi
 SH
 cat > "$fixture/stubs/am" <<'SH'
 #!/usr/bin/env bash
-[ "$*" = 'start -n io.github.a13e300.ksuwebui/.WebUIActivity --es id wallet_diagnostic --es name Wallet Diagnostic' ] || exit 92
+[ "$*" = 'start -n io.github.a13e300.ksuwebui/.WebUIActivity --es id wallet_diagnostic --es name RHSO' ] || exit 92
 printf '%s\n' "$*" > "$MOCK_ACTION_LOG"
 SH
 chmod +x "$fixture/module/bin/walletdiag" "$fixture/stubs/cmd" "$fixture/stubs/am"
