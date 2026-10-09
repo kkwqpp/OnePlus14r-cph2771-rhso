@@ -21,6 +21,8 @@ The release was tested on a rooted OnePlus 15R with an existing TrickyStore stac
 
 Apply is gated by the inspected TrickyStore 1.4.1 component hashes. Other installations require a compatibility review before writes. The manual watch estimate is tied to one built-in public fingerprint and is not a Google eligibility deadline.
 
+Diagnostic fields describing the owner's unlocked bootloader, Wallet error and supplied integrity passes are hardcoded development-baseline annotations. They are not fresh observations of another phone. Current-user, file, engine, NFC and public-feed checks have their own runtime evidence and limits.
+
 ## What it does
 
 - Copies authorized local inputs into private phone staging; validates bounded XML, private keys and X.509 chains; supports explicit ECDSA/RSA selection and merging.
