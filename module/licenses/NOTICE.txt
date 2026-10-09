@@ -1,0 +1,23 @@
+KernelSU JavaScript SDK
+Version: kernelsu 3.0.2
+Source: https://github.com/tiann/KernelSU/blob/9007ae639f664cdaa538f6184b7fa7f89c5f58ae/js/index.js
+Upstream package metadata: https://github.com/tiann/KernelSU/blob/main/js/package.json
+Author: weishu
+License: Apache-2.0 (as declared for the JavaScript package; bundled license alongside this notice).
+The SDK source is copied without modifications into webroot/ksu.js.
+The JavaScript package license applies to this package, not all KernelSU components.
+The backend's Go runtime license is included separately.
+
+Android native build (Wallet Diagnostic 0.1.1)
+Build input: official Android NDK r30, revision 30.0.16248370, Windows x86_64.
+Source: https://developer.android.com/ndk/downloads?hl=en
+The Android cgo/external-link build uses system bionic DNS and may incorporate
+NDK CRT startup objects, LLVM compiler-rt builtins and libunwind runtime code.
+Unmodified upstream notice collections are preserved conservatively:
+  Android-NDK-r30-NOTICE.txt: NDK root NOTICE, including Android/CRT notices.
+  LLVM-r30-NOTICE.txt: LLVM prebuilt NOTICE, including Apache-2.0 with LLVM
+    Exceptions, compiler-rt and legacy runtime terms and copyright notices.
+The collections contain notices for additional upstream components; their
+presence does not assert every listed component is linked into walletdiag.
+No compiler, full SDK/NDK, sysroot or standalone Android system shared library
+is redistributed in this module. Original helper source retains its MIT license.

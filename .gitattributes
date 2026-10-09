@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.go text eol=lf
+*.sh text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+module.prop text eol=lf
+skip_mount text eol=lf
+# Preserve the vendored SDK byte-for-byte, including upstream blank-line spaces.
+module/webroot/ksu.js whitespace=-blank-at-eol

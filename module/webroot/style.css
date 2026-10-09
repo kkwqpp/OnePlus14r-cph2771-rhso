@@ -1,0 +1,262 @@
+:root {
+  color-scheme:dark;
+  --bg:#101719;
+  --surface:#1b2529;
+  --line:#4d626b;
+  --text:#f4f7f8;
+  --muted:#c4d1d7;
+  --accent:#9ddcba;
+  --focus:#ffe094;
+  --warn:#ffe0a3;
+  font-family:system-ui,-apple-system,sans-serif;
+  font-size:17px;
+  line-height:1.55
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  overflow-wrap:anywhere
+}
+header,main,footer,nav,#notice {
+  max-width:880px;
+  margin:auto;
+  padding:1rem 1.2rem
+}
+header {
+  padding-top:2rem
+}
+h1 {
+  font-size:clamp(1.8rem,6vw,2.7rem);
+  line-height:1.15;
+  margin:.2rem 0 .7rem
+}
+h2 {
+  font-size:1.5rem;
+  line-height:1.3
+}
+h3 {
+  font-size:1.15rem;
+  margin:0 0 .6rem
+}
+.eyebrow {
+  letter-spacing:.07em;
+  font-size:.73rem;
+  color:var(--accent)
+}
+p {
+  margin:.7rem 0
+}
+nav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem;
+  border-bottom:1px solid var(--line)
+}
+nav button {
+  flex:1 1 145px;
+  min-width:0
+}
+.card {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:1rem;
+  margin:1rem 0
+}
+.warning {
+  border-color:var(--warn)
+}
+button,input,select {
+  font:inherit;
+  color:inherit;
+  max-width:100%
+}
+button {
+  min-height:48px;
+  padding:.65rem .9rem;
+  border:1px solid var(--accent);
+  border-radius:8px;
+  background:var(--accent);
+  color:#14251a;
+  font-weight:650;
+  cursor:pointer;
+  margin:.3rem .4rem .3rem 0
+}
+button.secondary,nav button {
+  background:transparent;
+  color:var(--text);
+  border-color:var(--line)
+}
+nav button[aria-current] {
+  color:var(--accent);
+  border-color:var(--accent)
+}
+button:disabled {
+  opacity:.6;
+  cursor:not-allowed
+}
+input[type=text],input[type=number],select {
+  display:block;
+  width:100%;
+  min-height:50px;
+  background:#101719;
+  border:1px solid #8da2ab;
+  border-radius:7px;
+  padding:.7rem;
+  margin:.4rem 0 1rem
+}
+input[type=checkbox],input[type=radio] {
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  accent-color:var(--accent)
+}
+label {
+  font-weight:600
+}
+.check,.choice {
+  display:flex;
+  align-items:flex-start;
+  gap:.7rem;
+  padding:.5rem 0;
+  cursor:pointer;
+  font-weight:400
+}
+.choice {
+  border-top:1px solid var(--line);
+  padding:.8rem 0
+}
+.choice span {
+  min-width:0
+}
+fieldset {
+  border:1px solid var(--line);
+  border-radius:7px;
+  margin:1rem 0;
+  padding:.8rem;
+  min-width:0
+}
+legend {
+  padding:0 .3rem
+}
+dl {
+  margin:.5rem 0
+}
+dt {
+  font-size:.85rem;
+  color:var(--muted);
+  margin-top:.65rem
+}
+dd {
+  margin:0;
+  overflow-wrap:anywhere
+}
+code {
+  font: .86rem ui-monospace,monospace;
+  overflow-wrap:anywhere
+}
+.hint,footer {
+  color:var(--muted);
+  font-size:.87rem
+}
+details {
+  margin:.8rem 0
+}
+summary {
+  min-height:48px;
+  display:list-item;
+  padding:.7rem 0;
+  cursor:pointer;
+  font-weight:600
+}
+.steps {
+  display:flex;
+  gap:.5rem;
+  flex-wrap:wrap;
+  padding-left:1.4rem;
+  font-size:.86rem
+}
+.steps li {
+  padding-right:1rem
+}
+.steps .active {
+  color:var(--accent);
+  font-weight:700
+}
+#notice {
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#172326
+}
+#notice.error {
+  color:var(--warn)
+}
+#notice.busy {
+  border-color:var(--accent)
+}
+:focus-visible {
+  outline:3px solid var(--focus);
+  outline-offset:3px
+}
+[hidden] {
+  display:none!important
+}
+.skip {
+  position:absolute;
+  left:-9999px;
+  top:0;
+  background:var(--accent);
+  color:#102016;
+  padding:1rem;
+  z-index:5
+}
+.skip:focus {
+  left:0
+}
+ul {
+  padding-left:1.3rem
+}
+li {
+  margin:.45rem 0
+}
+@media(max-width:400px) {
+  header,main,footer,nav,#notice {
+    padding-left:.85rem;
+    padding-right:.85rem
+  }
+  .card {
+    padding:.8rem
+  }
+  button {
+    width:100%;
+    margin-right:0
+  }
+  nav button {
+    flex-basis:120px;
+    width:auto
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  * {
+    scroll-behavior:auto
+  }
+}
+
+#notice {
+  position:static
+}
+
+#notice.busy {
+  position:sticky;
+  top:0;
+  max-height:30vh;
+  overflow:auto
+}
