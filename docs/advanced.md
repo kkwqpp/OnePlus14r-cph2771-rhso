@@ -1,3 +1,5 @@
+Historical Go 0.2.0 guide. Current implementation/build and audit corrections are in [Rust build](rust-build.md), [validation](validation.md) and [audit corrections](rust-audit-fixes.md). Historical examples are preserved for comparison and do not authorize phone operations.
+
 # Advanced, CLI and ADB guide
 
 The single backend is `/data/adb/modules/wallet_diagnostic/bin/walletdiag`. Persistent private state is `/data/adb/wallet_diagnostic`; active configuration remains `/data/adb/tricky_store`. The backend bundles Go’s XML, private-key and X.509 validation and does not require phone Python, curl or OpenSSL. Missing mandatory permissions or validation capabilities block writes with a stable result code.

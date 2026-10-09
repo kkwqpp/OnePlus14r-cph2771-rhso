@@ -6,12 +6,14 @@ Author: weishu
 License: Apache-2.0 (as declared for the JavaScript package; bundled license alongside this notice).
 The SDK source is copied without modifications into webroot/ksu.js.
 The JavaScript package license applies to this package, not all KernelSU components.
-The backend's Go runtime license is included separately.
+The Rust candidate includes Rust-THIRD-PARTY-NOTICES.txt and
+Rust-STD-MIT-APACHE-2.0.txt for the independently implemented backend and WASM UI.
+The source tree retains the separately licensed Go baseline for comparison.
 
-Android native build (RHSO 0.2.0)
+Android native build (RHSO 0.3.0 candidate)
 Build input: official Android NDK r30, revision 30.0.16248370, Windows x86_64.
 Source: https://developer.android.com/ndk/downloads?hl=en
-The Android cgo/external-link build uses system bionic DNS and may incorporate
+The Android Rust/NDK build uses system bionic DNS and may incorporate
 NDK CRT startup objects, LLVM compiler-rt builtins and libunwind runtime code.
 Unmodified upstream notice collections are preserved conservatively:
   Android-NDK-r30-NOTICE.txt: NDK root NOTICE, including Android/CRT notices.

@@ -3,69 +3,407 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>RHSO · Root Hiding Stack Optimizer</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="app.js"></script>
 </head>
 <body>
   <a href="#main" class="skip">Skip to content</a>
-  <header><p class="eyebrow">REVIEWED STACK CONFIGURATION · v0.2.0</p><h1>RHSO</h1><p>Root Hiding Stack Optimizer · Wallet and keybox diagnostics</p><p>Evidence first. Review every change. Keep a route back.</p></header>
+
+  <header>
+    <div class="brand-row">
+      <div>
+        <p class="eyebrow">ROOT SETUP &amp; WALLET</p>
+        <h1>RHSO</h1>
+      </div>
+      <span class="version">v0.3.0 · Candidate</span>
+    </div>
+    <p class="header-copy">Review your root setup and Wallet configuration.</p>
+  </header>
+
   <div id="notice" role="status" aria-live="polite" aria-atomic="true">Checking the WebUI bridge…</div>
+
   <nav aria-label="Main views">
     <button type="button" data-view="dashboard" aria-current="page">Overview</button>
-    <button type="button" data-view="import">Import &amp; review</button>
-    <button type="button" data-view="stack">Stack profiles</button>
-    <button type="button" data-view="diagnostics">Diagnostics</button>
-    <button type="button" data-view="history">Backups &amp; history</button>
+    <button type="button" data-view="import">Keyboxes</button>
+    <button type="button" data-view="stack">Root settings</button>
+    <button type="button" data-view="diagnostics">Phone checks</button>
+    <button type="button" data-view="history">Backups</button>
     <button type="button" data-view="advanced">Advanced</button>
   </nav>
+
   <main id="main" tabindex="-1">
     <section id="dashboard" class="view" aria-labelledby="dashboard-title">
-      <h2 id="dashboard-title">Current configuration</h2>
-      <div class="card"><dl id="current-summary"><dt>Evidence</dt><dd>Not collected yet.</dd></dl><button type="button" data-action="status">Refresh status</button></div>
-      <div class="card"><h3>Recommended next step</h3><p id="next-step">Run diagnostics before importing replacement material.</p><button type="button" data-action="diagnose">Collect diagnostics</button></div>
-      <div class="card"><h3>Needs attention</h3><div id="dashboard-findings"><p>No fresh findings collected.</p></div></div>
-      <div class="card"><h3>Wallet acceptance</h3><p>The owner reports “device doesn’t meet security requirements” during card setup, after entering the card number. Actual Tap-to-Pay remains unverified. Cryptographic validity and an integrity-check result do not establish Wallet acceptance.</p></div>
-      <div id="recovery-card" class="card warning" hidden><h3>Interrupted operation</h3><p id="recovery-summary"></p><button type="button" data-view="advanced">Open recovery controls</button></div>
+      <div class="section-heading">
+        <h2 id="dashboard-title">Start with a phone check</h2>
+        <p>Start with a read-only check, then choose what to review.</p>
+      </div>
+
+      <div class="card start-card">
+        <ol class="guide" aria-label="Getting started">
+          <li><span class="guide-number" aria-hidden="true">1</span><div><strong>Check phone</strong><span>Collect a read-only report.</span></div></li>
+          <li><span class="guide-number" aria-hidden="true">2</span><div><strong>Review a change</strong><span>Choose only what the findings support.</span></div></li>
+          <li><span class="guide-number" aria-hidden="true">3</span><div><strong>Verify in Wallet</strong><span>File checks cannot confirm payment approval.</span></div></li>
+        </ol>
+        <div class="actions"><button type="button" data-action="diagnose">Check phone</button></div>
+        <p class="next-step-label">Next step</p>
+        <p id="next-step">Check your phone before importing a replacement keybox.</p>
+      </div>
+
+      <div class="card">
+        <h3>Needs attention</h3>
+        <div id="dashboard-findings"><p>No fresh findings collected.</p></div>
+      </div>
+
+      <div id="recovery-card" class="card warning" hidden>
+        <h3>A change needs recovery</h3>
+        <p id="recovery-summary"></p>
+        <button type="button" data-view="advanced">Open recovery controls</button>
+      </div>
+
+      <details id="configuration-details" class="card">
+        <summary>Current setup and file checks</summary>
+        <dl id="current-summary"><dt>Evidence</dt><dd>Not collected yet.</dd></dl>
+        <button type="button" class="secondary" data-action="status">Refresh status</button>
+      </details>
+
+      <div class="card quiet-card">
+        <h3>Wallet is the final check</h3>
+        <p>The reported card-setup error says the device does not meet security requirements. Its cause is not yet established.</p>
+        <p class="hint">Valid keys, saved files and an integrity-check result do not guarantee Wallet approval or successful Tap-to-Pay.</p>
+      </div>
+
+      <details id="wallet-basics" class="card glossary">
+        <summary>What do these terms mean?</summary>
+        <dl>
+          <dt>Keybox</dt><dd>A file with private signing keys and certificate chains. Keep its contents outside this UI.</dd>
+          <dt>HMA</dt><dd>Hide My Applist. Its app scopes describe which packages selected apps should hide.</dd>
+          <dt>BreZygisk</dt><dd>A root-stack component. The supported setting here changes its unmount marker; it needs a manual reboot.</dd>
+          <dt>PIF</dt><dd>Play Integrity Fix. Its fingerprint and patch settings are separate from your keybox.</dd>
+          <dt>File verification</dt><dd>Checks saved configuration. Wallet approval and a successful payment need your own checks.</dd>
+        </dl>
+      </details>
     </section>
+
     <section id="import" class="view" hidden aria-labelledby="import-title">
-      <h2 id="import-title">Import → Review → Apply → Verify</h2>
-      <ol class="steps" aria-label="Workflow"><li id="step-import">Import</li><li id="step-review">Review</li><li id="step-apply">Apply</li><li id="step-verify">Verify</li></ol>
+      <div class="section-heading">
+        <h2 id="import-title">Review a keybox change</h2>
+        <p>Import a private copy, choose entries, then review before Apply.</p>
+      </div>
+      <ol class="steps" aria-label="Workflow">
+        <li id="step-import">Import</li>
+        <li id="step-review">Review</li>
+        <li id="step-apply">Apply</li>
+        <li id="step-verify">Verify</li>
+      </ol>
+
       <div id="import-input" class="card">
-        <h3>1. Import into private staging</h3>
-        <p>Copy an XML file to the private inbox using ADB, then enter its absolute path. The backend copies and validates it before it can enter a plan.</p>
-        <label for="input-path">XML path on the phone</label><input id="input-path" type="text" autocomplete="off" spellcheck="false" value="/data/adb/wallet_diagnostic/inbox/" aria-describedby="path-help">
-        <p id="path-help" class="hint">Private: /data/adb/wallet_diagnostic/inbox/name.xml. Optional /sdcard/keybox_inbox/name.xml is less private; remove the shared copy yourself after import.</p>
-        <button type="button" data-action="ingest">Import &amp; validate</button><button type="button" class="secondary" data-action="ingest-active">Import current active keybox for a reviewed merge</button>
-        <details><summary>How to copy a file</summary><p>Use the Windows ADB examples in the first-use guide included in the download. This interface does not assume the host supports a browser file picker. Never paste XML or credentials into the UI.</p></details>
+        <h3>1. Import a private copy</h3>
+        <p>A keybox contains private signing material. Import copies the XML for review; it does not replace your active files.</p>
+        <label for="input-path">XML file path on the phone</label>
+        <input id="input-path" type="text" autocomplete="off" spellcheck="false" value="/data/adb/wallet_diagnostic/inbox/" aria-describedby="path-help">
+        <p id="path-help" class="hint">Use /data/adb/wallet_diagnostic/inbox/name.xml. The optional /sdcard/keybox_inbox/name.xml is less private; remove that shared copy yourself after import.</p>
+        <div class="actions">
+          <button type="button" data-action="ingest">Import &amp; validate</button>
+          <button type="button" class="secondary" data-action="ingest-active">Review the current keybox</button>
+        </div>
+        <details class="inline-help">
+          <summary>How to copy a file</summary>
+          <p>Copy the file with ADB, enter its phone path above, then import it. Use the Windows examples in the first-use guide included in the download.</p>
+          <p>Keep XML, private keys and credentials in the file. Never paste them into this interface.</p>
+        </details>
       </div>
+
       <div id="selection-card" class="card">
-        <h3>2. Choose material deliberately</h3><p>Choose at most one complete key and certificate chain per algorithm. A merged keybox contains only the entries you select: import the current active keybox and select its entries to retain an algorithm. Every Keybox and conflicting entry is listed separately. Trust and revocation stay unknown unless independently established.</p>
-        <div id="input-list"></div><div id="selection-list"></div>
-        <fieldset><legend>Other proposed repairs</legend><label class="check"><input id="compact-targets" type="checkbox" aria-describedby="compact-targets-help"> Remove repeated target entries with the same package and mode</label><p id="compact-targets-help" class="hint">Keeps the first entry, comments, blank lines and package modes. Conflicting modes or unsupported syntax stop the plan. Review the exact removals before Apply. This does not establish root hiding or Wallet acceptance.</p><label class="check"><input id="repair-targets" type="checkbox"> Repair required Wallet/GMS/Store/GSF generate-mode target entries while preserving unrelated lines</label><label for="patch">TrickyStore patch alignment (optional)</label><input id="patch" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" autocomplete="off" maxlength="10"><p class="hint">Leave empty to preserve the existing patch. Use only when fresh findings justify matching the configured PIF patch.</p></fieldset>
-        <p id="plan-blocker" class="hint"></p><button type="button" data-action="plan" id="plan-button">Build reviewable plan</button><button type="button" class="secondary" data-action="cancel-import">Cancel this review</button>
+        <h3>2. Choose the entries to keep</h3>
+        <p>The new keybox contains only your selected entries. Choose at most one complete key and certificate chain per algorithm.</p>
+        <details class="inline-help">
+          <summary>Keeping an existing algorithm</summary>
+          <p>Import the current keybox and select the entries you want to retain. Conflicting entries are listed separately. Trust and revocation remain unknown unless checked independently.</p>
+        </details>
+        <div id="input-list"></div>
+        <div id="selection-list"></div>
+
+        <details id="optional-repairs" class="advanced-disclosure">
+          <summary>Optional target and patch repairs</summary>
+          <p class="hint">Choose a repair only when fresh findings support it. All options start unselected.</p>
+          <fieldset>
+            <legend>Other proposed repairs</legend>
+            <label class="check"><input id="compact-targets" type="checkbox" aria-describedby="compact-targets-help"> Remove exact duplicate target entries</label>
+            <p id="compact-targets-help" class="hint">Keeps the first entry, comments, blank lines and package modes. Conflicting modes or unsupported syntax stop the plan. Review every removal before Apply; this does not prove root hiding or Wallet approval.</p>
+            <label class="check"><input id="repair-targets" type="checkbox"> Repair required Wallet, Play services, Store and GSF generate-mode targets; keep unrelated lines</label>
+            <label for="patch">TrickyStore patch date · optional</label>
+            <input id="patch" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" autocomplete="off" maxlength="10">
+            <p class="hint">Leave blank to keep the current patch. Match the configured PIF patch only when fresh findings justify it.</p>
+          </fieldset>
+        </details>
+        <p id="plan-blocker" class="hint"></p>
+        <div class="actions">
+          <button type="button" data-action="plan" id="plan-button">Review selected changes</button>
+          <button type="button" class="secondary" data-action="cancel-import">Cancel review</button>
+        </div>
       </div>
+
       <div id="plan-card" class="card" hidden>
-        <h3>3. Review the exact plan</h3><dl id="plan-summary"></dl><div id="plan-changes"></div><div id="plan-warnings"></div>
-        <p>Apply rechecks the plan, snapshots all three active configuration files, then commits through a recovery journal. External edits invalidate the plan. During a commit, let the backend finish or recover; do not close the host to try to cancel.</p>
+        <h3>3. Review before applying</h3>
+        <dl id="plan-summary"></dl>
+        <div id="plan-changes"></div>
+        <div id="plan-warnings"></div>
+        <p>Apply rechecks this plan and backs up all three active files before changing them. External edits invalidate the plan.</p>
+        <p class="hint">Let a started change finish or use recovery. Closing the WebUI does not safely cancel a commit.</p>
         <label class="check"><input id="apply-confirm" type="checkbox"> I reviewed these selected changes and want to apply this plan</label>
-        <button type="button" data-action="apply" id="apply-button" disabled>Back up &amp; apply</button><button type="button" class="secondary" data-action="back-review">Back to selections</button>
+        <div class="actions">
+          <button type="button" data-action="apply" id="apply-button" disabled>Back up &amp; apply</button>
+          <button type="button" class="secondary" data-action="back-review">Back to selections</button>
+        </div>
       </div>
-      <div id="verify-card" class="card" hidden><h3>4. Collect verification</h3><p id="apply-result"></p><p>Files committed, engine health, and adoption evidence are reported separately. Fresh attestation traffic may still be needed. Then check Wallet readiness and test Tap-to-Pay yourself.</p><label class="check"><input id="wallet-ready" type="checkbox"> I personally confirmed Wallet readiness after this change</label><label class="check"><input id="tap-confirmed" type="checkbox"> I personally completed a successful Tap-to-Pay transaction after this change</label><button type="button" data-action="verify">Verify current configuration &amp; record selected user checks</button><div id="verification-result"></div><button type="button" class="secondary" data-view="history">Open rollback</button></div>
+
+      <div id="verify-card" class="card" hidden>
+        <h3>4. Check files, then Wallet</h3>
+        <p id="apply-result"></p>
+        <p>The helper reports saved files, engine health and adoption evidence separately. Fresh attestation traffic may still be needed.</p>
+        <p class="hint">Confirm the boxes only after your own checks in Wallet. A file check cannot approve a card or payment.</p>
+        <label class="check"><input id="wallet-ready" type="checkbox"> I personally confirmed Wallet readiness after this change</label>
+        <label class="check"><input id="tap-confirmed" type="checkbox"> I personally completed a successful Tap-to-Pay transaction after this change</label>
+        <button type="button" data-action="verify">Check files &amp; record my Wallet checks</button>
+        <div id="verification-result" class="result"></div>
+        <button type="button" class="secondary" data-view="history">Open backups</button>
+      </div>
     </section>
-    <section id="stack" class="view" hidden aria-labelledby="stack-title"><h2 id="stack-title">Reviewed stack profiles</h2><div class="card"><p>These profiles change only the supported HMA scope configuration or BreZygisk unmount marker. A private full backup precedes Apply. File readback establishes persisted configuration; runtime adoption and Wallet acceptance stay unverified. Apply and rollback require a manual reboot.</p><button type="button" data-action="stack-status">Inspect stack capabilities &amp; operation</button><div id="stack-status-result"><p>Inspect capabilities before choosing a profile.</p></div></div><div class="card"><label for="stack-profile">Profile (no default selection)</label><select id="stack-profile"><option value="">Choose a supported profile</option><option value="hma-scope">HMA: add an explicit blacklist scope</option><option value="brezygisk-unmount">BreZygisk: change unmount marker</option></select><p id="stack-blocker" class="hint"></p><fieldset id="stack-hma-fields" hidden><legend>HMA scope: choose every target explicitly</legend><label class="check"><input type="checkbox" name="stack-target" value="com.google.android.apps.walletnfcrel"> Wallet</label><label class="check"><input type="checkbox" name="stack-target" value="com.google.android.gms"> Google Play services</label><label class="check"><input type="checkbox" name="stack-target" value="com.android.vending"> Play Store</label><label class="check"><input type="checkbox" name="stack-target" value="com.google.android.gsf"> Google Services Framework</label><label for="stack-package-input">Package identifiers to offer for this review (comma separated)</label><input type="text" id="stack-package-input" autocomplete="off" spellcheck="false" maxlength="2048" placeholder="org.example.manager"><button type="button" data-action="stack-candidates" class="secondary">Add unchecked package choices</button><p class="hint">Only the package names you enter appear here. Existing private hidden lists are never displayed. Check each desired package below; entering a name does not select it.</p><div id="stack-package-choices"></div></fieldset><fieldset id="stack-marker-fields" hidden><legend>BreZygisk marker: choose the intended value explicitly</legend><label class="check"><input type="radio" name="stack-enabled" value="true"> Enable the unmount marker</label><label class="check"><input type="radio" name="stack-enabled" value="false"> Disable the unmount marker</label></fieldset><button type="button" data-action="stack-plan" id="stack-plan-button" disabled>Build stack review plan</button><button type="button" data-action="stack-cancel" class="secondary">Cancel stack review</button></div><div class="card" id="stack-plan-card" hidden><h3>Review the selected stack change</h3><div id="stack-plan-result"></div><label class="check"><input type="checkbox" id="stack-apply-confirm"> I reviewed this scope and private backup policy and want to apply this stack plan</label><button type="button" data-action="stack-apply" id="stack-apply-button" disabled>Back up &amp; apply stack plan</button></div><div class="card"><h3>Verify files or restore the private backup</h3><label for="stack-operation-id">Reviewed stack plan / operation ID</label><input type="text" id="stack-operation-id" autocomplete="off" spellcheck="false" maxlength="32"><button type="button" data-action="stack-verify" id="stack-verify-button" disabled>Verify persisted stack files</button><label class="check"><input type="checkbox" id="stack-rollback-confirm"> Restore this operation’s verified private backup; runtime adoption stays unknown and I will reboot manually</label><button type="button" data-action="stack-rollback" id="stack-rollback-button" disabled>Restore stack backup / recover interrupted stack write</button><p class="hint">An interrupted stack journal blocks new changes. Inspect its operation ID, release a proven stale lock through Recovery if necessary, then explicitly restore this stack backup. No lock release, reboot or rollback runs automatically.</p><div id="stack-operation-result"></div></div></section>
-    <section id="diagnostics" class="view" hidden aria-labelledby="diagnostics-title"><h2 id="diagnostics-title">Evidence and uncertainty</h2><div class="card"><p>Collect targeted, redacted findings before changing configuration. The reported setup error indicates card-provisioning security rejection; it does not yet identify the cause.</p><button type="button" data-action="diagnose">Collect fresh diagnostics</button><p id="diagnostics-time" class="hint">No evidence collected in this view.</p></div><details class="card"><summary>Device, application versions and evidence limits</summary><div id="diagnostic-context"><p>Collect diagnostics first.</p></div></details><div id="diagnostic-findings"></div></section>
-    <section id="history" class="view" hidden aria-labelledby="history-title"><h2 id="history-title">Backups &amp; history</h2><div class="card"><button type="button" data-action="backups">Refresh backup list</button><p>Rollback snapshots the current set first and validates the selected backup. “Last applied” is distinct from a configuration with recorded verification.</p><label for="backup-choice">Configuration to restore</label><select id="backup-choice"><option value="previous">Previous configuration</option><option value="last-verified">Last configuration with recorded verification</option></select><div id="backup-preview"></div><label class="check"><input type="checkbox" id="rollback-confirm"> Restore the selected configuration and preserve the current set in a new backup</label><button type="button" data-action="rollback" id="rollback-button" disabled>Back up &amp; roll back</button></div><div id="backup-list"></div><div class="card"><h3>Recent operations</h3><div id="history-list"><p>Refresh status to collect operation history.</p></div></div></section>
+
+    <section id="stack" class="view" hidden aria-labelledby="stack-title">
+      <div class="section-heading">
+        <h2 id="stack-title">Review root settings</h2>
+        <p>Supported HMA and BreZygisk settings, with explicit choices and a backup.</p>
+      </div>
+      <div class="card">
+        <p>Inspect support first. Applying or restoring a setting needs a manual reboot. Saved-file checks do not establish runtime adoption or Wallet approval.</p>
+        <button type="button" data-action="stack-status">Check supported settings</button>
+        <div id="stack-status-result" class="result"><p>Check support before choosing a profile.</p></div>
+        <details class="inline-help">
+          <summary>What these settings do</summary>
+          <p><strong>HMA</strong> adds packages to explicitly selected app scopes. Existing private lists are not displayed.</p>
+          <p><strong>BreZygisk</strong> changes a persistent unmount marker. This is a broader setting, not a per-app choice. Nothing is selected automatically.</p>
+        </details>
+      </div>
+
+      <div class="card">
+        <h3>Choose a setting to review</h3>
+        <label for="stack-profile">Setting · no default selection</label>
+        <select id="stack-profile">
+          <option value="">Choose a supported profile</option>
+          <option value="hma-scope">HMA: add an explicit blacklist scope</option>
+          <option value="brezygisk-unmount">BreZygisk: change unmount marker</option>
+        </select>
+        <p id="stack-blocker" class="hint"></p>
+
+        <fieldset id="stack-hma-fields" hidden>
+          <legend>HMA: choose each app scope</legend>
+          <label class="check"><input type="checkbox" name="stack-target" value="com.google.android.apps.walletnfcrel"> Wallet</label>
+          <label class="check"><input type="checkbox" name="stack-target" value="com.google.android.gms"> Google Play services</label>
+          <label class="check"><input type="checkbox" name="stack-target" value="com.android.vending"> Play Store</label>
+          <label class="check"><input type="checkbox" name="stack-target" value="com.google.android.gsf"> Google Services Framework</label>
+          <label for="stack-package-input">Packages to offer for this review</label>
+          <input type="text" id="stack-package-input" autocomplete="off" spellcheck="false" maxlength="2048" placeholder="org.example.manager">
+          <p class="hint">Enter package identifiers separated by commas. Adding names creates unchecked choices; check each package you want to include.</p>
+          <button type="button" data-action="stack-candidates" class="secondary">Add package choices</button>
+          <div id="stack-package-choices"></div>
+        </fieldset>
+
+        <fieldset id="stack-marker-fields" hidden>
+          <legend>BreZygisk: choose the marker state</legend>
+          <label class="check"><input type="radio" name="stack-enabled" value="true"> Enable the unmount marker</label>
+          <label class="check"><input type="radio" name="stack-enabled" value="false"> Disable the unmount marker</label>
+        </fieldset>
+        <div class="actions">
+          <button type="button" data-action="stack-plan" id="stack-plan-button" disabled>Review this setting</button>
+          <button type="button" data-action="stack-cancel" class="secondary">Cancel review</button>
+        </div>
+      </div>
+
+      <div class="card" id="stack-plan-card" hidden>
+        <h3>Review the root-setting change</h3>
+        <div id="stack-plan-result"></div>
+        <label class="check"><input type="checkbox" id="stack-apply-confirm"> I reviewed this scope and private backup policy and want to apply this stack plan</label>
+        <button type="button" data-action="stack-apply" id="stack-apply-button" disabled>Back up &amp; apply setting</button>
+      </div>
+
+      <div class="card">
+        <h3>After a change</h3>
+        <p>Check the saved files for the operation below. Runtime adoption and Wallet approval need separate checks.</p>
+        <label for="stack-operation-id">Operation ID</label>
+        <input type="text" id="stack-operation-id" autocomplete="off" spellcheck="false" maxlength="32">
+        <p class="hint">Filled after a change. Inspect root settings to find the current saved operation.</p>
+        <button type="button" data-action="stack-verify" id="stack-verify-button" disabled>Check saved setting files</button>
+
+        <details id="stack-recovery-controls" class="advanced-disclosure">
+          <summary>Restore a root-setting backup</summary>
+          <p>Restore this operation’s saved file. Runtime adoption remains unknown and a manual reboot is required.</p>
+          <label class="check"><input type="checkbox" id="stack-rollback-confirm"> Restore this operation’s verified private backup; runtime adoption stays unknown and I will reboot manually</label>
+          <button type="button" data-action="stack-rollback" id="stack-rollback-button" disabled>Restore saved setting</button>
+          <p class="hint">An interrupted stack journal blocks new changes. Inspect its operation ID, release a proven stale lock through Recovery if needed, then restore explicitly. No lock release, reboot or rollback runs automatically.</p>
+        </details>
+
+        <details id="stack-close-controls" class="advanced-disclosure">
+          <summary>Keep the current file and close the operation</summary>
+          <p>Inspect the conflicting or interrupted operation first. This preserves current evidence and closes its ledger; it does not restore or write the stack file.</p>
+          <label for="stack-resolve-phrase">Type KEEP CURRENT STACK FILE</label>
+          <input id="stack-resolve-phrase" type="text" autocomplete="off" spellcheck="false">
+          <button type="button" data-action="stack-resolve" id="stack-resolve-button" disabled>Keep current file &amp; close operation</button>
+        </details>
+        <div id="stack-operation-result" class="result"></div>
+      </div>
+    </section>
+
+    <section id="diagnostics" class="view" hidden aria-labelledby="diagnostics-title">
+      <div class="section-heading">
+        <h2 id="diagnostics-title">Phone checks</h2>
+        <p>Read-only findings to help you decide whether a change is justified.</p>
+      </div>
+      <div class="card">
+        <p>The card-setup security error does not identify its cause. Collect fresh, redacted findings before choosing a repair.</p>
+        <button type="button" data-action="diagnose">Check phone again</button>
+        <p id="diagnostics-time" class="hint">No evidence collected in this view.</p>
+      </div>
+      <details class="card">
+        <summary>Device details and check limits</summary>
+        <div id="diagnostic-context"><p>Collect diagnostics first.</p></div>
+      </details>
+      <div id="diagnostic-findings"></div>
+    </section>
+
+    <section id="history" class="view" hidden aria-labelledby="history-title">
+      <div class="section-heading">
+        <h2 id="history-title">Backups and history</h2>
+        <p>Inspect saved configurations before choosing a restore.</p>
+      </div>
+      <div class="card">
+        <h3>Saved configurations</h3>
+        <button type="button" data-action="backups">Refresh backup list</button>
+        <p class="hint">A last-applied backup is different from one with recorded verification. Restoring first backs up the current set.</p>
+        <details id="backup-restore-controls" class="advanced-disclosure">
+          <summary>Restore a configuration backup</summary>
+          <label for="backup-choice">Configuration to restore</label>
+          <select id="backup-choice">
+            <option value="previous">Previous configuration</option>
+            <option value="last-verified">Last configuration with recorded verification</option>
+          </select>
+          <p>The selected backup is validated before restoration. Your current configuration is saved in a new backup.</p>
+          <label class="check"><input type="checkbox" id="rollback-confirm"> Restore the selected configuration and preserve the current set in a new backup</label>
+          <button type="button" data-action="rollback" id="rollback-button" disabled>Back up &amp; restore</button>
+        </details>
+        <div id="backup-preview" class="result"></div>
+      </div>
+      <div id="backup-list"></div>
+      <div class="card">
+        <h3>Recent operations</h3>
+        <div id="history-list"><p>Refresh status to collect operation history.</p></div>
+      </div>
+    </section>
+
     <section id="advanced" class="view" hidden aria-labelledby="advanced-title">
-      <h2 id="advanced-title">Advanced controls</h2>
-      <div class="card" id="api-card"><h3>Configured HTTPS raw-XML source</h3><p>The exact supplied Cleveres endpoint remains unavailable and its provider contract is unverified. This generic adapter accepts only a separately configured HTTPS source returning raw XML; it does not establish provider provenance or Wallet acceptance.</p><p>Provision a JSON file in the root-private inbox with directory mode 0700 and file mode 0600. Enter only its path here. Keep URLs, credentials and file contents outside this UI. Configuration and status never fetch a feed.</p><button type="button" data-action="api">Inspect redacted API status</button><div id="api-result"><p>Inspect status to check whether this backend supports the generic adapter.</p></div><label for="api-config-path">Root-private JSON filepath</label><input id="api-config-path" type="text" autocomplete="off" spellcheck="false" value="/data/adb/wallet_diagnostic/inbox/api-config.json" aria-describedby="api-reason"><button type="button" data-action="api-config" id="api-config-button" disabled>Save private-file configuration</button><button type="button" data-action="api-import" id="api-import-button" disabled>Fetch once into private staging</button><p id="api-reason" class="hint">Local ingest remains available. No uploaded key material, automatic fetch, selection, Plan or Apply.</p><div id="api-stage-result"></div><button type="button" data-action="api-validate" id="api-validate-button" disabled>Validate staged API input &amp; open review</button></div>
-      <div class="card"><h3>Canary &amp; patch watch</h3><p>Manual, read-only check. The supplied 2026-11-18 Canary expiry is an estimate and must be invalidated if the fingerprint changes.</p><label for="watch-days">Warn within this many days</label><input id="watch-days" type="number" min="1" max="365" value="14"><button type="button" data-action="watch">Check warnings</button><div id="watch-result"></div></div>
-      <div class="card"><h3>Interrupted-operation recovery</h3><button type="button" data-action="recovery-status">Inspect recovery journal</button><div id="recovery-result"></div><label class="check"><input id="recovery-confirm" type="checkbox"> Restore the interrupted transaction’s previous configuration</label><button type="button" data-action="recovery-restore" id="recovery-button" disabled>Restore previous set</button><p>If a stopped process left only a lock, the backend can release it after proving the owner ended or the boot changed. It refuses to release a running process’s lock.</p><button type="button" class="secondary" data-action="recovery-release" id="release-lock-button" disabled>Release an ended operation’s lock</button></div>
-      <details class="card"><summary>Separately confirmed Wallet reset</summary><p>This clears Wallet, Play Store, GSF and GMS app data. Wallet/card setup may be lost, GSF state/Android-ID behavior may change, and Google sign-in and card re-provisioning may be required. A manual reboot and reviewed PIF action are separate steps. The requested second GMS clear has no established rationale.</p><p>Use only after diagnosis supports trying this workflow. Reset is separate from ordinary Apply and rollback cannot restore cleared app data. Automatic post-reboot PIF execution is unavailable: the installed action fetches network material and can change PIF/patch settings. Review and run that action manually, then force-stop GMS. The helper only records your explicit completion.</p><button type="button" data-action="reset-status">Inspect reset state</button><button type="button" data-action="reset-preview">Review reset sequence</button><div id="reset-preview"></div><div id="reset-confirm-fields" hidden><label for="reset-phrase">Type CLEAR WALLET AND GOOGLE SERVICES to confirm reviewed data deletion</label><input id="reset-phrase" type="text" autocomplete="off" spellcheck="false"><button type="button" data-action="reset-confirm" id="reset-button" disabled>Clear reviewed app data</button></div><button type="button" data-action="reset-resume">Check journal after manual reboot</button><label for="reset-complete-phrase">After both manual commands succeed, type PIF ACTION AND GMS FORCE-STOP COMPLETED</label><input id="reset-complete-phrase" type="text" autocomplete="off" spellcheck="false"><button type="button" data-action="reset-complete" id="reset-complete-button" disabled>Record successful manual completion</button><div id="reset-result"></div></details>
-      <details class="card"><summary>When the WebUI is unavailable</summary><p>The same backend is available at:</p><code>/data/adb/modules/wallet_diagnostic/bin/walletdiag help</code><p>Run status, diagnose, recovery and rollback through ADB or a root shell. No reboot, background rotation, or second attestation engine is started by this module.</p></details>
+      <div class="section-heading">
+        <h2 id="advanced-title">Advanced tools</h2>
+        <p>Use only the tool that matches a finding or a recovery need.</p>
+      </div>
+
+      <div class="card" id="api-card">
+        <h3>Private XML source</h3>
+        <p>The supplied Cleveres endpoint remains unavailable and its contract is unverified. This adapter needs a separately configured HTTPS source returning raw XML.</p>
+        <button type="button" class="secondary" data-action="api">Check source status</button>
+        <div id="api-result" class="result"><p>Check status to see whether this backend supports the adapter.</p></div>
+        <details id="api-source-controls" class="advanced-disclosure">
+          <summary>Configure or fetch a private source</summary>
+          <p>Put a JSON configuration in the root-private inbox: directory mode 0700, file mode 0600. Enter only its path. Keep URLs, credentials and file contents outside this UI.</p>
+          <label for="api-config-path">Private JSON file path</label>
+          <input id="api-config-path" type="text" autocomplete="off" spellcheck="false" value="/data/adb/wallet_diagnostic/inbox/api-config.json" aria-describedby="api-reason">
+          <div class="actions">
+            <button type="button" data-action="api-config" id="api-config-button" disabled>Save source configuration</button>
+            <button type="button" data-action="api-import" id="api-import-button" disabled>Fetch one private copy</button>
+          </div>
+          <p class="hint">Saving configuration and checking status do not fetch a feed. Fetch stages a copy; it does not select keys or apply changes.</p>
+        </details>
+        <p id="api-reason" class="hint">Local import remains available. No uploaded key material, automatic fetch, selection, Plan or Apply.</p>
+        <div id="api-stage-result" class="result"></div>
+        <button type="button" data-action="api-validate" id="api-validate-button" class="secondary" disabled>Validate fetched copy &amp; open review</button>
+      </div>
+
+      <div class="card">
+        <h3>Fingerprint and patch warnings</h3>
+        <p>Manual, read-only check. The supplied 2026-11-18 Canary expiry is an estimate; a changed fingerprint invalidates it.</p>
+        <label for="watch-days">Warn within this many days</label>
+        <input id="watch-days" type="number" min="1" max="365" value="14">
+        <button type="button" class="secondary" data-action="watch">Check warnings</button>
+        <div id="watch-result" class="result"></div>
+      </div>
+
+      <div class="card">
+        <h3>Recover an interrupted change</h3>
+        <button type="button" class="secondary" data-action="recovery-status">Inspect recovery state</button>
+        <details id="recovery-restore-controls" class="advanced-disclosure">
+          <summary>Restore files or release an ended lock</summary>
+          <p>Inspect the recovery state first. Restoration returns the interrupted transaction’s previous configuration.</p>
+          <label class="check"><input id="recovery-confirm" type="checkbox"> Restore the interrupted transaction’s previous configuration</label>
+          <button type="button" data-action="recovery-restore" id="recovery-button" disabled>Restore previous files</button>
+          <p class="hint">A lock can be released only after the backend proves its process ended or the boot changed. A running process’s lock is kept.</p>
+          <button type="button" class="secondary" data-action="recovery-release" id="release-lock-button" disabled>Release an ended operation’s lock</button>
+        </details>
+        <div id="recovery-result" class="result"></div>
+      </div>
+
+      <div class="card reset-card">
+        <h3>Wallet app-data reset</h3>
+        <p class="danger-copy">Cleared app data cannot be restored by a configuration backup.</p>
+        <button type="button" class="secondary" data-action="reset-status">Inspect reset state</button>
+
+        <details id="reset-clear-controls" class="advanced-disclosure destructive">
+          <summary>Review a destructive reset</summary>
+          <p>This clears Wallet, Play Store, GSF and GMS app data. Card setup may be lost; Google sign-in and card setup may need repeating. GSF state and Android-ID behavior may change.</p>
+          <p>Use only after diagnosis supports this separate workflow. A manual reboot and reviewed PIF action follow. The requested second GMS clear has no established rationale.</p>
+          <button type="button" class="secondary" data-action="reset-preview">Review reset sequence</button>
+          <div id="reset-preview" class="result"></div>
+          <div id="reset-confirm-fields" hidden>
+            <label for="reset-phrase">Type CLEAR WALLET AND GOOGLE SERVICES to confirm reviewed data deletion</label>
+            <input id="reset-phrase" type="text" autocomplete="off" spellcheck="false">
+            <button type="button" class="danger-button" data-action="reset-confirm" id="reset-button" disabled>Clear reviewed app data</button>
+          </div>
+        </details>
+
+        <details id="reset-manual-controls" class="advanced-disclosure">
+          <summary>Finish a reviewed reset after reboot</summary>
+          <p>Automatic PIF execution is unavailable. The installed action fetches network material and can change PIF and patch settings. Review and run it manually, then force-stop GMS. Do not repeat the clears.</p>
+          <button type="button" class="secondary" data-action="reset-resume">Check journal after manual reboot</button>
+          <label for="reset-complete-phrase">After both manual commands succeed, type PIF ACTION AND GMS FORCE-STOP COMPLETED</label>
+          <input id="reset-complete-phrase" type="text" autocomplete="off" spellcheck="false">
+          <button type="button" data-action="reset-complete" id="reset-complete-button" disabled>Record manual completion</button>
+        </details>
+
+        <details id="reset-close-controls" class="advanced-disclosure">
+          <summary>Close an incomplete reset without repeating it</summary>
+          <p>Inspect reset state first. This preserves the attempted-step ledger and backup. It does not repeat clears or restore cleared app data.</p>
+          <label for="reset-close-phrase">Type CLOSE INCOMPLETE RESET WITHOUT REPEATING</label>
+          <input id="reset-close-phrase" type="text" autocomplete="off" spellcheck="false">
+          <button type="button" data-action="reset-close" id="reset-close-button" disabled>Close incomplete reset</button>
+        </details>
+        <div id="reset-result" class="result"></div>
+      </div>
+
+      <details class="card">
+        <summary>If the WebUI cannot open</summary>
+        <p>The same backend is available from ADB or a root shell:</p>
+        <code>/data/adb/modules/wallet_diagnostic/bin/walletdiag help</code>
+        <p class="hint">Use its status, diagnose, recovery and rollback commands. This module starts no reboot, background rotation or second attestation engine.</p>
+      </details>
     </section>
   </main>
-  <footer><p>Private state: /data/adb/wallet_diagnostic · Offline interface assets · No browser storage of keys or credentials</p></footer>
+
+  <footer>
+    <p>Root Hiding Stack Optimizer · Private state stays on your phone.</p>
+    <details>
+      <summary>Privacy and storage</summary>
+      <p>Private state: /data/adb/wallet_diagnostic. The interface uses offline assets and no browser storage of keys or credentials.</p>
+    </details>
+  </footer>
 </body>
 </html>

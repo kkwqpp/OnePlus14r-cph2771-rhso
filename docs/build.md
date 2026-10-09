@@ -1,3 +1,5 @@
+> Historical Go build guide. The current Rust candidate uses [Rust build](rust-build.md); its actual checks and pending runtime gates are in [validation](validation.md). Earlier counts and instructions below describe the Go baseline.
+
 # Build and test RHSO
 
 This guide builds the RHSO 0.2.0 candidate and its local assets. It does not install a module, alter active phone configuration, fetch a configured private feed, clear app data or run the reset ritual. All fixtures are synthetic. Copied/decompiled Android/vendor code and external build tools are development inputs outside the repository; do not redistribute them in the ZIP. Final 0.2.0 integrated results and release hashes remain pending in [validation](validation.md).

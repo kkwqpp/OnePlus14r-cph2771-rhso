@@ -3,3 +3,4 @@
 /scratch/
 /module/bin/walletdiag
 *.exe
+/target/

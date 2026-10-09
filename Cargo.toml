@@ -1,0 +1,23 @@
+[workspace]
+members = ["crates/backend", "crates/keybox", "crates/webui", "crates/packager"]
+resolver = "3"
+
+[workspace.package]
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT"
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value", "arbitrary_precision"] }
+sha2 = "0.10"
+hex = "0.4"
+regex = "1"
+time = { version = "0.3", features = ["formatting", "parsing", "macros"] }

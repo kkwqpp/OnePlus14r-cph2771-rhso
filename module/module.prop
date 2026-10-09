@@ -1,6 +1,6 @@
 id=wallet_diagnostic
 name=RHSO - Root Hiding Stack Optimizer
-version=v0.2.0
-versionCode=3
+version=v0.3.0
+versionCode=4
 author=Device owner and Codex
 description=Reviewed HMA/BreZygisk settings and target optimization, private keybox staging, Wallet diagnostics and recovery. No automatic changes.

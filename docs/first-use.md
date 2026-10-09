@@ -1,5 +1,7 @@
 # First use
 
+The steps below preserve the earlier Go interface and installation guidance. The current Rust candidate uses a guided overview and simpler labels; start with the [Rust WebUI guide](rust-ui.md) and [current validation](validation.md). Real Android installation and host compatibility remain pending for Rust.
+
 This helper is for the owned rooted OnePlus 15R and the existing TrickyStore stack. The real bootloader remains unlocked. The module has no partition writer, attestation engine, automatic rotation, reboot, or boot-time configuration changes. A reported “device doesn’t meet security requirements” immediately after entering the card number is a card-setup rejection; Wallet acceptance and Tap-to-Pay still require an actual user check.
 
 1. Keep the module ZIP and its SHA-256 file on the PC. Verify the download against the supplied package hash. Install the ZIP through the existing KernelSU manager; no custom recovery installation is supported. Fresh installation preserves the active TrickyStore/PIF files. Do not change other modules to make the helper run.

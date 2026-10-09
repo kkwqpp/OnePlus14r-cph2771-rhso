@@ -1,3 +1,45 @@
+# RHSO v0.3.0 validation and limits
+
+The current candidate moves independently authored backend, keybox validation, UI policy/workflows and release packaging into Rust. Browser policy runs in WASM; declarative HTML/CSS, thin loader/generated glue, the vendored KernelSU SDK and Android lifecycle adapters remain necessary interoperability. External engines, OS/kernel programs and hardware/server decisions keep their original implementations. See the [component map](rust-component-map.md).
+
+The critical read-only audit of checkpoint `6647086` is complete and its [corrections](rust-audit-fixes.md) are implemented. The [guided WebUI](rust-ui.md) is included in the audit candidate. The listed Rust checks are partial compile/fixture evidence. Go source is retained while full parity and Android runtime checks are pending; no completed Rust release or phone installation is claimed.
+
+**Tap-to-Pay remains unproved.** Local validation, public-feed flags, file readback and a language migration cannot establish signer adoption, Google/issuer approval or an actual payment.
+
+## Current Rust candidate
+
+| Check | Recorded status |
+| --- | --- |
+| Native UI policy | 7 tests passed |
+| Rust WASM release compile | Passed; Rust 1.90.0 / wasm-bindgen 0.2.108 |
+| WASM core contract parity | 10 tests passed |
+| Offline Chrome workflow and bootstrap checks | Passed with mocked root bridge, including hash-bound Stack/reset close-outs, private API/stack/stale/recovery guards, no WASM/remote fetch and malformed-WASM fail-closed. Guided read-only check, inert closed disclosures, 390px/1280px layouts and measured 200% text at 320px with intact navigation words passed. |
+| Native Rust packager | 11 tests passed with synthetic module/ELF fixtures |
+| Packager Clippy, all targets, warnings denied | Passed |
+| Combined Windows backend/keybox/workspace tests | 142 tests passed after corrections (99 backend / 25 keybox / 11 packager / 7 UI). Original checkpoint 107; Unix-only and Android runtime cases remain pending. |
+| Combined workspace lint and formatting | Passed: `cargo clippy --locked --workspace --all-targets -- -D warnings` and `cargo fmt --all -- --check` |
+| Critical audit and local corrections | F-01–F-12 implemented; regressions pass. Full Go semantic parity remains unproved. |
+| Android Rust candidate binary/ELF verification | Passed NDK r30/API 28: AArch64 PIE, linker64, all three LOADs 16KiB, GNU_STACK RW, system libdl/libc only. No native execution. |
+| Module shell/install/uninstall fixtures | Passed with inert command stubs |
+| Rust real-device DNS/TLS, CLI and native test execution | Pending |
+| Rust WASM in the installed Android WebUI host | Pending |
+| Rust notices and candidate ZIP | Complete selected dependency/standard-library notices; 21-entry ZIP assembled and repeated with identical bytes; every included file hash/mode/timestamp checked |
+| Clean-checkout Rust build reproduction | Pending; repeated assembly uses identical already-built inputs |
+| Rust real installation/update preservation | Pending |
+| Production stack activation, fresh selected-signer adoption, Wallet setup and payment | Unproved |
+
+Module ID `wallet_diagnostic`, version `v0.3.0`, code `4`; existing CLI/private names are retained for recovery continuity. Final artifact `dist/rhso-v0.3.0-audit-candidate.zip`: **3,214,196 bytes**, SHA-256 **dff8ffac59411828bc0a65d3bf61275d96b84198d739a75a035b1c9dd1cbabe5**, with matching sidecar. The repeated archive matches exactly. Native backend: **4,133,640 bytes**, SHA-256 **d92cf027e88f72b165fa88b6c6e239a5a5ec1f0e22399918a18ad08fa33b3690**. Browser WASM: **1,380,849 bytes**, SHA-256 **631f8dd1f9cf399f134a940818fc7334ac40474d9df8139ff9200e68cfb15fa6**. Native/WASM source, cache and home paths are remapped; the final 21 archive entries match their inputs, modes and timestamps and contain no local owner paths. These candidate artifacts have not been run or installed on the phone. No completed release or Wallet fix is inferred.
+
+An earlier local draft ZIP, **3,212,700 bytes**, SHA-256 **95fb39202a31d86d6068319286a205dfef921064dcd7f9550a81437d210fc278**, and its checksum were copied to phone Downloads and checked under separate authorization. That copy predates the guided UI and publication path remapping. File transfer did not install the module or alter the active configuration.
+
+The [notice provenance](rust-licenses.md) covers 156 exact package/version identities and 298 source notice files across the selected normal/build graphs, plus Rust 1.90's complete installed standard-library aggregate. Cached source texts match locked crate archives; the sole archive missing its license texts uses its exact recorded upstream commit. Re-enumeration is required if targets, features, dependencies or toolchain change.
+
+The detailed [Rust validation matrix](rust-validation.md) describes covered cases and their limits. [Rust build](rust-build.md) is the current build route. Final integrators must replace pending rows with observed final results and hashes, retaining the distinction between synthetic execution, read-only inspection, authorized writes and actual payment acceptance.
+
+## Historical Go v0.2.0 baseline
+
+This preserved record describes the earlier Go release and phone observations, not Rust runtime execution or current Wallet acceptance.
+
 # RHSO v0.2.0 validation and limits
 
 2026-10-09. The release adds selected HMA schema-93 blacklist additions, the BreZygisk 548 unmount marker, duplicate target compaction, private configured HTTPS raw-XML staging, and PIF/stack-aware verification freshness. These results are separate from runtime activation, signer adoption, Google Wallet approval and an actual payment. **Tap-to-Pay remains unproved.**

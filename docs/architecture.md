@@ -1,3 +1,5 @@
+Historical Go 0.2.0 guide. Current implementation/build and audit corrections are in [Rust build](rust-build.md), [validation](validation.md) and [audit corrections](rust-audit-fixes.md). Historical examples are preserved for comparison and do not authorize phone operations.
+
 # Architecture and interface
 
 RHSO v0.2.0 is an explicitly invoked helper around the existing TrickyStore, HMA-OSS and BreZygisk installation. WebUI, native CLI, module action and Windows ADB use one Go backend and dispatcher. The module installs no daemon, TCP service, filesystem mount, startup writer, attestation provider, property spoof, scheduled rotation or reboot hook. It cannot write bootloader state or partitions.

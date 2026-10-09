@@ -1,0 +1,29 @@
+[package]
+name = "rhso-keybox"
+version = "0.3.0"
+edition = "2021"
+license = "MIT"
+description = "Bounded, redacted local keybox validation and explicit selection"
+
+[dependencies]
+quick-xml = "0.38.3"
+pem = "3.0.6"
+pkcs8 = { version = "0.10.2", features = ["std"] }
+sec1 = { version = "0.7.3", features = ["std"] }
+rsa = "0.9.10"
+p256 = { version = "0.13.2", features = ["pkcs8", "pem"] }
+p384 = { version = "0.13.1", features = ["pkcs8", "pem"] }
+p521 = { version = "0.13.3", features = ["ecdsa"] }
+x509-parser = { version = "0.18.1", features = ["verify"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
+zeroize = "1.8"
+regex = "1.11"
+sha2 = { version = "0.10", features = ["oid"] }
+sha1 = { version = "0.10", features = ["oid"] }
+
+[dev-dependencies]
+rcgen = { version = "0.13.2", features = ["pem", "ring"] }
+rand = "0.8"
+x509-cert = "0.2.5"
