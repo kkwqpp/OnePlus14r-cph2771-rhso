@@ -77,3 +77,13 @@ Success returns an immutable staged input ID. **Validate** is separate, followed
 Specter's broad cleanup removes app/shared/system state and clears log buffers without recoverable backups. Those operations do not meet this module's recovery contract and are not implemented as a generic trace-wipe button. Staging, credentials, backup/journal/history data and persistent signing aliases remain preserved.
 
 RHSO can verify files and report activation pending. A passing integrity checker, Google-root match, unlisted certificate, completed reset or applied hiding setting is not a successful card setup or terminal payment. The [live trial record](live-keybox-trial.md) separates the owner-authorized phone operations from those still unverified.
+
+## StrongBox feature overlay
+
+The OnePlus 15R (CPH2771) declares `android.hardware.strongbox_keystore` in `/odm/etc/permissions/android.hardware.hardware_keystore.jc-strongbox-keymint3.nxp.xml`. TEESimulator simulates StrongBox keys for targeted apps but signs them with the keybox's TEE chain, which no real device produces. RHSO ships `odm/etc/permissions/<same name>` without the StrongBox feature, keeping `android.hardware.keystore.app_attest_key`, so apps fall back to TEE keys. The module therefore no longer carries `skip_mount`; the mounting meta-module (for example NoMount) applies the overlay at boot.
+
+```powershell
+& adb shell "su -c 'pm list features | grep -i strongbox || echo hidden'"
+```
+
+The packager rejects an overlay that still declares StrongBox or drops `app_attest_key`. Disabling RHSO and rebooting restores the stock feature. Hiding the feature does not by itself establish Wallet acceptance; on 2026-10-10 Wallet still rejected the tested public keyboxes with StrongBox hidden.

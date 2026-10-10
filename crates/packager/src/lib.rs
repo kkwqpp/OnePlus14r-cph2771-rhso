@@ -14,7 +14,7 @@ pub const REQUIRED: &[&str] = &[
     "customize.sh",
     "action.sh",
     "uninstall.sh",
-    "skip_mount",
+    "odm/etc/permissions/android.hardware.hardware_keystore.jc-strongbox-keymint3.nxp.xml",
     "webroot/index.html",
     "webroot/app.js",
     "webroot/ui-core.js",
@@ -37,7 +37,16 @@ const IGNORED: &[&str] = &[
     "webroot/rhso_webui_bg.wasm.d.ts",
     "licenses/Go-BSD-3-Clause.txt",
 ];
-const DIRS: &[&str] = &["bin", "webroot", "licenses"];
+const DIRS: &[&str] = &[
+    "bin",
+    "webroot",
+    "licenses",
+    "odm",
+    "odm/etc",
+    "odm/etc/permissions",
+];
+pub const STRONGBOX_OVERLAY: &str =
+    "odm/etc/permissions/android.hardware.hardware_keystore.jc-strongbox-keymint3.nxp.xml";
 const MAX_ASSET: usize = 32 * 1024 * 1024;
 const MAX_BACKEND: usize = 128 * 1024 * 1024;
 const MAX_TOTAL: usize = 192 * 1024 * 1024;
@@ -389,7 +398,7 @@ pub fn collect(module: &Path, backend: &Path) -> Result<BTreeMap<String, Vec<u8>
             return Err(format!("Required module asset is missing: {name}"));
         }
         let bytes = read_regular(&module.join(name), MAX_ASSET)?;
-        if bytes.is_empty() && *name != "skip_mount" {
+        if bytes.is_empty() {
             return Err("A required module asset is empty.".into());
         }
         total = total
@@ -418,8 +427,14 @@ pub fn collect(module: &Path, backend: &Path) -> Result<BTreeMap<String, Vec<u8>
             return Err("Module identity/version must match RHSO 0.3.0 code 4 without duplicate properties.".into());
         }
     }
-    if !files["skip_mount"].is_empty() {
-        return Err("skip_mount must be an empty marker.".into());
+    let overlay = std::str::from_utf8(&files[STRONGBOX_OVERLAY])
+        .map_err(|_| "StrongBox overlay is not UTF-8.")?;
+    if overlay.contains("android.hardware.strongbox_keystore")
+        || !overlay.contains("android.hardware.keystore.app_attest_key")
+    {
+        return Err(
+            "StrongBox overlay must drop strongbox_keystore and keep app_attest_key.".into(),
+        );
     }
     let executable = read_regular(&backend, MAX_BACKEND)?;
     validate_elf(&executable)?;

@@ -1,5 +1,6 @@
 use rhso_packager::{
-    Options, REQUIRED, archive, collect, embed_file, embedded_wasm, parse_args, run, validate_elf,
+    Options, REQUIRED, STRONGBOX_OVERLAY, archive, collect, embed_file, embedded_wasm, parse_args,
+    run, validate_elf,
 };
 use std::{
     fs,
@@ -53,7 +54,11 @@ fn fixture(root: &Path) -> Options {
         let p = module.join(name);
         fs::create_dir_all(p.parent().unwrap()).unwrap();
         let bytes: Vec<u8> = match *name {
-            "skip_mount" => vec![],
+            n if n == STRONGBOX_OVERLAY => b"<permissions>
+  <feature name=\"android.hardware.keystore.app_attest_key\" />
+</permissions>
+"
+            .to_vec(),
             "module.prop" => b"id=wallet_diagnostic\nversion=v0.3.0\nversionCode=4\n".to_vec(),
             "webroot/rhso_webui_bg.wasm" => b"\0asm\x01\0\0\0".to_vec(),
             _ => b"synthetic public fixture\n".to_vec(),
@@ -316,4 +321,19 @@ fn source_byte_helper_uses_identical_generator_and_guards_its_output() {
     fs::write(&wasm, b"corrupt").unwrap();
     assert!(embed_file(&wasm, &out).is_err());
     assert_eq!(fs::read(&out).unwrap(), embedded_wasm(data).unwrap());
+}
+#[test]
+fn strongbox_overlay_must_drop_strongbox_and_keep_app_attest_key() {
+    let temp = tempfile::tempdir().unwrap();
+    let o = fixture(temp.path());
+    let p = o.module.join(STRONGBOX_OVERLAY);
+    fs::write(
+        &p,
+        "<permissions>\n  <feature name=\"android.hardware.strongbox_keystore\" version=\"300\"/>\n  <feature name=\"android.hardware.keystore.app_attest_key\" />\n</permissions>\n",
+    )
+    .unwrap();
+    assert!(run(&o).is_err());
+    fs::write(&p, "<permissions>\n</permissions>\n").unwrap();
+    assert!(run(&o).is_err());
+    assert!(!o.output.exists());
 }
